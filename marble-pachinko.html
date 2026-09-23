@@ -1,0 +1,1780 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>弹珠机 PRO · 幸运打珠</title>
+<style>
+/* ============ 主题变量（默认：深夜霓虹） ============ */
+:root{
+  --bg1:#1c2444; --bg2:#0b0e18; --bg3:#05060a;
+  --panel:#12151f; --panel2:#181d2b; --panel3:#1e2434; --line:#2a3145;
+  --text:#e9edf9; --dim:#8d97b1; --dim2:#616b85;
+  --gold:#ffcf5c; --gold2:#ff9d2e; --red:#ff5168; --green:#3ddc97; --blue:#5aa8ff; --purple:#a97bff;
+  --radius:16px; --radius-sm:10px; --gap:14px; --side:424px;
+  --font:"Segoe UI","Microsoft YaHei",system-ui,-apple-system,"PingFang SC",sans-serif;
+  --board-bg:radial-gradient(760px 420px at 50% 6%, rgba(90,168,255,.10), transparent 70%),linear-gradient(180deg,#0c1020,#080a12 70%);
+  --card-inset:inset 0 1px 0 rgba(255,255,255,.03);
+  --input-bg:#0e1220; --soft:#0e1220;
+}
+body[data-theme="daylight"]{
+  --bg1:#ffffff; --bg2:#eef2f8; --bg3:#dfe6f0;
+  --panel:#ffffff; --panel2:#f5f8fc; --panel3:#eaeff7; --line:#ccd6e4;
+  --text:#16202f; --dim:#5a6a80; --dim2:#8494a8;
+  --gold:#c8860d; --gold2:#e0a12a; --red:#d63a52; --green:#1a9c68; --blue:#2f74d0; --purple:#7b52c8;
+  --radius:14px; --radius-sm:10px; --side:430px;
+  --board-bg:radial-gradient(760px 420px at 50% 6%, rgba(47,116,208,.10), transparent 70%),linear-gradient(180deg,#f7fafd,#e8eef7 70%);
+  --card-inset:inset 0 1px 0 rgba(255,255,255,.9);
+  --input-bg:#ffffff; --soft:#f2f6fc;
+}
+body[data-theme="arcade"]{
+  --bg1:#04140c; --bg2:#020a06; --bg3:#000000;
+  --panel:#04140d; --panel2:#061b11; --panel3:#08281a; --line:#12603c;
+  --text:#8dffc4; --dim:#46b07f; --dim2:#2c7a56;
+  --gold:#f5ff6b; --gold2:#c8e02a; --red:#ff6b6b; --green:#3dff9e; --blue:#5ce1ff; --purple:#c48bff;
+  --radius:2px; --radius-sm:2px; --gap:9px; --side:404px;
+  --font:"Consolas","Courier New",monospace;
+  --board-bg:repeating-linear-gradient(0deg,rgba(0,255,140,.05) 0 1px,transparent 1px 3px),linear-gradient(180deg,#03150d,#000 70%);
+  --card-inset:none; --input-bg:#03130c; --soft:#04180f;
+}
+body[data-theme="sakura"]{
+  --bg1:#ffe9f1; --bg2:#fff6f9; --bg3:#f7dbe6;
+  --panel:#fffdfe; --panel2:#fff4f8; --panel3:#ffe9f1; --line:#f3c9d9;
+  --text:#4a2b3a; --dim:#9a6a80; --dim2:#c08fa4;
+  --gold:#e07a9c; --gold2:#f0a0bb; --red:#e04f74; --green:#3aa87a; --blue:#6f8fe0; --purple:#a97bff;
+  --radius:24px; --radius-sm:16px; --gap:16px; --side:438px;
+  --board-bg:radial-gradient(700px 400px at 50% 8%, rgba(224,122,156,.16), transparent 70%),linear-gradient(180deg,#fff6f9,#ffe6ef 70%);
+  --card-inset:inset 0 1px 0 rgba(255,255,255,.9); --input-bg:#ffffff; --soft:#fff2f7;
+}
+body[data-theme="vegas"]{
+  --bg1:#3a0d10; --bg2:#150406; --bg3:#080000;
+  --panel:#1a0709; --panel2:#250a0d; --panel3:#330f13; --line:#5e1f24;
+  --text:#ffe9c9; --dim:#c99a72; --dim2:#8e6547;
+  --gold:#ffd35c; --gold2:#ffa41f; --red:#ff3b46; --green:#4be09a; --blue:#66b3ff; --purple:#c98bff;
+  --radius:8px; --radius-sm:6px; --gap:12px; --side:428px;
+  --board-bg:radial-gradient(700px 400px at 50% 8%, rgba(255,164,31,.14), transparent 70%),linear-gradient(180deg,#1c0508,#0a0000 70%);
+  --card-inset:inset 0 1px 0 rgba(255,215,120,.10); --input-bg:#170406; --soft:#1d0608;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;color:var(--text);font-family:var(--font);
+  background:radial-gradient(1200px 720px at 50% -12%, var(--bg1) 0%, var(--bg2) 55%, var(--bg3) 100%);
+  overflow:hidden;transition:background .35s;
+}
+button{font-family:inherit}
+::-webkit-scrollbar{width:9px;height:9px}
+::-webkit-scrollbar-thumb{background:var(--line);border-radius:9px}
+::-webkit-scrollbar-track{background:transparent}
+
+.app{display:grid;grid-template-columns:minmax(0,1fr) var(--side);gap:var(--gap);height:100vh;padding:var(--gap)}
+.col{display:flex;flex-direction:column;gap:var(--gap);min-height:0}
+.card{background:linear-gradient(180deg,var(--panel2),var(--panel));border:1px solid var(--line);
+  border-radius:var(--radius);box-shadow:0 12px 34px rgba(0,0,0,.35), var(--card-inset)}
+body[data-theme="arcade"] .card{box-shadow:none}
+body[data-theme="vegas"] .card{border-color:#7a2a1c}
+
+/* ---------- 顶栏 ---------- */
+.hud{display:flex;align-items:center;gap:9px;padding:10px 12px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:9px;padding-right:12px;border-right:1px solid var(--line);margin-right:2px}
+.brand .logo{width:34px;height:34px;border-radius:var(--radius-sm);display:grid;place-items:center;font-size:19px;
+  background:linear-gradient(160deg,var(--panel3),var(--panel));border:1px solid var(--line)}
+.brand .t{font-weight:800;letter-spacing:.5px;font-size:15px}
+.brand .s{font-size:11px;color:var(--dim2);letter-spacing:2px}
+.stat{display:flex;align-items:center;gap:8px;padding:6px 11px;border-radius:var(--radius-sm);
+  background:var(--panel3);border:1px solid var(--line);min-width:74px}
+.stat .k{font-size:11px;color:var(--dim2)}
+.stat .v{font-size:18px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1.15}
+.stat.gold .v{color:var(--gold)} .stat.blue .v{color:var(--blue)} .stat.green .v{color:var(--green)}
+.stat.red .v{color:var(--red)} .stat.purple .v{color:var(--purple)}
+.spacer{flex:1}
+.pill{font-size:11px;padding:4px 9px;border-radius:999px;border:1px solid var(--line);background:var(--soft);color:var(--dim);white-space:nowrap}
+
+/* ---------- 机器 ---------- */
+.machine{position:relative;flex:1;min-height:380px;display:flex;flex-direction:column;overflow:hidden}
+.marquee{display:flex;align-items:center;gap:10px;padding:7px 14px;font-size:12.5px;color:var(--gold);
+  background:linear-gradient(90deg,var(--panel3),var(--soft));border-bottom:1px solid var(--line);white-space:nowrap;overflow:hidden}
+.marquee .dot{width:7px;height:7px;border-radius:50%;background:var(--gold);box-shadow:0 0 10px var(--gold);animation:blink 1.1s infinite}
+@keyframes blink{50%{opacity:.25}}
+.marquee .scroll{flex:1;overflow:hidden;text-overflow:ellipsis}
+.buffbar{display:flex;gap:6px;flex-wrap:wrap;padding:7px 12px;border-bottom:1px solid var(--line);background:var(--soft);min-height:34px;align-items:center}
+.buffbar .none{font-size:11.5px;color:var(--dim2)}
+.buff{font-size:11.5px;padding:3px 9px;border-radius:999px;border:1px solid var(--line);background:var(--panel);white-space:nowrap;font-variant-numeric:tabular-nums}
+.buff.pity{border-color:#b8860b;color:var(--gold)}
+.buff.wxtd{border-color:var(--red);color:var(--red)}
+.buff.hit{border-color:var(--blue);color:var(--blue)}
+.buff.luck{border-color:var(--green);color:var(--green)}
+.buff.fortune{border-color:var(--purple);color:var(--purple)}
+.buff.promo{border-color:var(--line);color:var(--dim)}
+
+.board{position:relative;flex:1;min-height:340px;overflow:hidden;background:var(--board-bg)}
+.board::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:2}
+body[data-theme="arcade"] .board::after{background:repeating-linear-gradient(0deg,rgba(0,0,0,.35) 0 1px,transparent 1px 3px)}
+.pegs{position:absolute;inset:0;opacity:.45;
+  background-image:radial-gradient(circle, var(--dim2) 1.3px, transparent 1.6px);
+  background-size:34px 30px;background-position:17px 12px;
+  mask-image:linear-gradient(180deg,rgba(0,0,0,.85),rgba(0,0,0,.25) 78%,transparent);
+  -webkit-mask-image:linear-gradient(180deg,rgba(0,0,0,.85),rgba(0,0,0,.25) 78%,transparent)}
+
+/* 机构：斜坡准备区 / 发射槽 / 隔板 / 击打装置 / 孔间隔柱 */
+.tray{position:absolute;left:0;right:0;border-top:2px solid var(--line);
+  background:linear-gradient(180deg,rgba(120,140,180,.10),rgba(20,24,36,.5));
+  border-bottom-left-radius:8px;border-bottom-right-radius:8px;pointer-events:none;z-index:1}
+.tray::before{content:"";position:absolute;left:0;right:0;top:-1px;height:14px;
+  background:linear-gradient(180deg,rgba(160,180,220,.18),transparent)}
+.chute{position:absolute;border:1px solid var(--line);border-radius:6px;pointer-events:none;z-index:2;
+  background:linear-gradient(90deg,rgba(255,255,255,.05),rgba(0,0,0,.28),rgba(255,255,255,.05));
+  box-shadow:inset 0 0 12px rgba(0,0,0,.5)}
+.chute::before{content:"";position:absolute;left:50%;top:0;bottom:0;width:1px;background:repeating-linear-gradient(180deg,var(--line) 0 6px,transparent 6px 12px);opacity:.6}
+.gate{position:absolute;z-index:3;pointer-events:none;background:linear-gradient(180deg,var(--gold),var(--gold2));
+  border-radius:2px;transform-origin:left center;transition:transform .28s ease}
+.gate.open{transform:rotate(-72deg)}
+.striker{position:absolute;z-index:4;pointer-events:none;border-radius:3px;
+  background:linear-gradient(180deg,#8f9ab8,#3b445e);
+  border:1px solid var(--line);transition:transform .12s ease}
+.striker.push{transform:translateY(-16px)}
+.divider{position:absolute;width:5px;z-index:1;pointer-events:none;border-radius:3px;
+  background:linear-gradient(180deg,rgba(190,210,255,.30),rgba(190,210,255,.06));
+  box-shadow:inset 0 0 4px rgba(255,255,255,.35);transform:translateX(-50%)}
+
+/* 中间奖励面板 */
+.center-panel{position:absolute;left:50%;top:42%;transform:translate(-50%,-50%);
+  width:min(340px,62%);padding:13px 18px 11px;border-radius:var(--radius);text-align:center;
+  background:linear-gradient(180deg,var(--panel2),var(--panel));border:1px solid var(--line);
+  box-shadow:0 18px 46px rgba(0,0,0,.45);z-index:3}
+.center-panel.rolling{border-color:var(--gold2);box-shadow:0 0 34px rgba(255,170,40,.22)}
+.center-panel.locked{border-color:var(--gold);box-shadow:0 0 40px rgba(255,190,60,.3)}
+.cp-label{font-size:11.5px;color:var(--dim2);letter-spacing:3px}
+.cp-value{font-size:44px;font-weight:900;line-height:1.05;font-variant-numeric:tabular-nums;color:var(--gold)}
+body[data-theme="arcade"] .cp-value{text-shadow:0 0 14px var(--gold)}
+.cp-value.rolling{opacity:.85}
+.cp-value small{font-size:17px;font-weight:800;color:var(--dim)}
+.cp-sub{font-size:12px;color:var(--dim);margin-top:2px;font-variant-numeric:tabular-nums}
+.cp-sub b{color:var(--gold)}
+.cp-calc{font-size:12px;color:var(--dim);margin-top:6px;padding-top:6px;border-top:1px dashed var(--line);font-variant-numeric:tabular-nums}
+.cp-calc b{color:var(--green)}
+
+.hole{position:absolute;width:54px;height:54px;margin:0;transform:translate(-50%,-50%);
+  border-radius:50%;display:grid;place-items:center;background:var(--panel3);
+  border:2px solid var(--line);cursor:not-allowed;transition:transform .16s, box-shadow .2s, border-color .2s;color:var(--dim);z-index:3}
+body[data-theme="arcade"] .hole{border-radius:3px}
+body[data-theme="vegas"] .hole{border-radius:50%;border-color:#7a2a1c}
+.hole .no{font-size:14px;font-weight:800;font-variant-numeric:tabular-nums;opacity:.75}
+.hole .tag{position:absolute;top:-11px;left:50%;transform:translateX(-50%);font-size:10.5px;font-weight:800;
+  padding:2px 7px;border-radius:999px;white-space:nowrap;background:var(--soft);border:1px solid var(--line);color:var(--dim2);opacity:0;transition:.2s}
+.hole.reward{border-color:var(--gold);cursor:pointer;color:var(--gold);
+  background:radial-gradient(circle at 36% 28%, rgba(255,200,90,.22), var(--panel3) 74%);
+  box-shadow:0 0 18px rgba(255,170,40,.35), inset 0 0 16px rgba(255,170,40,.18)}
+.hole.reward .no{opacity:1}
+.hole.reward .tag{opacity:1;color:#1a1206;background:linear-gradient(180deg,var(--gold),var(--gold2));border-color:var(--gold2)}
+.hole.reward:hover{transform:translate(-50%,-50%) scale(1.1)}
+.hole.special{border-color:var(--red)!important;color:#ffd9dd!important;
+  background:radial-gradient(circle at 36% 28%, rgba(255,60,80,.38), var(--panel3) 76%)!important;
+  box-shadow:0 0 24px rgba(255,60,80,.75), inset 0 0 18px rgba(255,60,80,.35)!important;animation:sp 1.1s ease-in-out infinite}
+.hole.special .tag{background:linear-gradient(180deg,#ff8a94,var(--red))!important;border-color:var(--red)!important;color:#fff!important}
+@keyframes sp{50%{box-shadow:0 0 34px rgba(255,60,80,.95), inset 0 0 22px rgba(255,60,80,.5)}}
+.hole.flash{border-color:var(--gold2)}
+.hole.target{border-color:#fff;box-shadow:0 0 0 4px rgba(255,207,92,.20), 0 0 30px rgba(255,190,60,.6);transform:translate(-50%,-50%) scale(1.12)}
+.hole.target::after{content:"";position:absolute;inset:-13px;border-radius:50%;border:2px dashed var(--gold);animation:spin 5s linear infinite}
+body[data-theme="arcade"] .hole.target::after{border-radius:4px}
+.hole.neighbor{box-shadow:0 0 0 3px rgba(90,168,255,.18), 0 0 20px rgba(90,168,255,.35)}
+.hole.landed{animation:landed .7s ease-out}
+.hole.landed.ok{border-color:var(--green);box-shadow:0 0 0 5px rgba(61,220,151,.22),0 0 40px rgba(61,220,151,.65)}
+.hole.landed.no{border-color:var(--red);box-shadow:0 0 0 5px rgba(255,81,104,.18),0 0 34px rgba(255,81,104,.5)}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes landed{0%{transform:translate(-50%,-50%) scale(1.35)}100%{transform:translate(-50%,-50%) scale(1)}}
+
+.ball{position:absolute;left:0;top:0;width:16px;height:16px;border-radius:50%;
+  background:radial-gradient(circle at 34% 30%, #ffffff, #cfe0ff 40%, #7d93c4 100%);
+  box-shadow:0 0 14px rgba(180,210,255,.85), 0 2px 6px rgba(0,0,0,.6);will-change:transform;z-index:6}
+.ball[data-skin="yuanbao"]{background:radial-gradient(circle at 34% 30%,#fff6d0,#ffcf5c 42%,#b8860b 100%);box-shadow:0 0 16px rgba(255,200,80,.95)}
+.ball[data-skin="clover"]{background:radial-gradient(circle at 34% 30%,#e8fff2,#4be09a 42%,#127a4d 100%);box-shadow:0 0 16px rgba(75,224,154,.95)}
+.ball[data-skin="target"]{background:radial-gradient(circle at 50% 50%,#fff 0 22%,#ff5168 23% 46%,#fff 47% 62%,#ff5168 63% 100%);box-shadow:0 0 16px rgba(255,81,104,.95)}
+.ball[data-skin="normal"]{background:radial-gradient(circle at 34% 30%, #ffffff, #cfe0ff 40%, #7d93c4 100%)}
+.float{position:absolute;font-weight:900;font-size:22px;pointer-events:none;z-index:8;
+  text-shadow:0 2px 14px rgba(0,0,0,.85);animation:floatUp 1.3s ease-out forwards;white-space:nowrap}
+@keyframes floatUp{0%{opacity:0;transform:translate(-50%,0) scale(.7)}18%{opacity:1;transform:translate(-50%,-14px) scale(1.12)}100%{opacity:0;transform:translate(-50%,-64px) scale(1)}}
+
+.hint{position:absolute;left:50%;bottom:8px;transform:translateX(-50%);font-size:12.5px;color:var(--dim);
+  background:color-mix(in srgb,var(--panel) 88%,transparent);border:1px solid var(--line);padding:6px 14px;border-radius:999px;
+  white-space:nowrap;z-index:5;max-width:96%;overflow:hidden;text-overflow:ellipsis}
+.hint b{color:var(--gold)}
+.roundbar{position:absolute;left:14px;top:12px;display:flex;gap:8px;flex-wrap:wrap;z-index:5;max-width:calc(100% - 28px)}
+.chip{font-size:11.5px;padding:5px 10px;border-radius:var(--radius-sm);background:color-mix(in srgb,var(--panel) 88%,transparent);border:1px solid var(--line);color:var(--dim)}
+.chip b{color:var(--text)}
+.chip.hot{border-color:var(--gold2);color:var(--gold)}
+.chip.spec{border-color:var(--red);color:var(--red)}
+
+/* ---------- 操作区 ---------- */
+.controls{padding:11px 12px;display:flex;flex-direction:column;gap:9px;border-top:1px solid var(--line);background:var(--soft)}
+.row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.label{font-size:12px;color:var(--dim2);min-width:56px}
+.btn{padding:9px 15px;border-radius:var(--radius-sm);border:1px solid var(--line);background:var(--panel3);color:var(--text);font-weight:800;font-size:13.5px;cursor:pointer;transition:.15s}
+.btn:hover:not(:disabled){border-color:var(--gold2);transform:translateY(-1px)}
+.btn:disabled{opacity:.3;cursor:not-allowed;transform:none}
+.btn.primary{background:linear-gradient(180deg,var(--gold),var(--gold2));color:#171106;border-color:var(--gold2)}
+.btn.primary.pulse{animation:btnPulse 1.25s ease-in-out infinite}
+.btn.green{background:linear-gradient(180deg,#5be3a8,#25a86f);color:#04170f;border-color:#1c6b47}
+.btn.green.pulse{animation:btnPulse 1.25s ease-in-out infinite}
+.btn.magic{background:linear-gradient(180deg,#ff9aa6,#d81f36);color:#fff;border-color:#8b1220}
+.btn.magic.pulse{animation:btnPulse 1.25s ease-in-out infinite}
+.btn.ghost{background:var(--soft)}
+.btn.danger{border-color:var(--red);color:var(--red);background:var(--soft)}
+.btn.danger.pulse{animation:btnPulse 1.25s ease-in-out infinite}
+.btn.sm{padding:6px 11px;font-size:12.5px;border-radius:var(--radius-sm);font-weight:700}
+@keyframes btnPulse{50%{box-shadow:0 8px 30px rgba(255,150,30,.6)}}
+.toggle{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--dim);cursor:pointer;user-select:none;padding:6px 10px;border:1px solid var(--line);border-radius:var(--radius-sm);background:var(--soft)}
+.toggle input{accent-color:var(--gold);margin:0}
+.toggle.on{color:var(--text);border-color:var(--gold2)}
+input[type=number]{width:72px;padding:8px 9px;border-radius:var(--radius-sm);background:var(--input-bg);border:1px solid var(--line);color:var(--text);font-family:inherit;font-size:13.5px;font-weight:700}
+
+/* ---------- 侧栏 ---------- */
+.tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;padding:8px}
+.tab{padding:8px 4px;text-align:center;font-size:12px;font-weight:800;border-radius:var(--radius-sm);cursor:pointer;color:var(--dim);border:1px solid transparent}
+.tab.sel{background:var(--panel3);color:var(--gold);border-color:var(--line)}
+.panelbody{flex:1;overflow-y:auto;padding:0 12px 12px;min-height:0}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.kpi{background:var(--panel3);border:1px solid var(--line);border-radius:var(--radius-sm);padding:9px 11px}
+.kpi .k{font-size:11px;color:var(--dim2);margin-bottom:3px}
+.kpi .v{font-size:17px;font-weight:800;font-variant-numeric:tabular-nums}
+.kpi .v.g{color:var(--green)} .kpi .v.r{color:var(--red)} .kpi .v.a{color:var(--gold)} .kpi .v.b{color:var(--blue)} .kpi .v.p{color:var(--purple)}
+h4{margin:14px 0 8px;font-size:12px;color:var(--dim2);letter-spacing:1px;font-weight:700;border-bottom:1px solid var(--line);padding-bottom:6px}
+.chart{width:100%;height:96px;display:block;border-radius:var(--radius-sm);background:var(--soft);border:1px solid var(--line)}
+.log{display:flex;flex-direction:column;gap:5px;font-size:12px}
+.logrow{display:flex;gap:8px;align-items:center;padding:6px 9px;border-radius:var(--radius-sm);background:var(--soft);border:1px solid var(--line)}
+.logrow .n{color:var(--dim2);font-variant-numeric:tabular-nums;min-width:26px;font-size:11px}
+.logrow.win{border-color:var(--green)}
+.logrow.lose{opacity:.75}
+.logrow.buy{border-color:var(--gold2)}
+.logrow.buff{border-color:var(--purple)}
+.logrow.acv{border-color:var(--gold)} .logrow.acv .amt{color:var(--gold)}
+.logrow.draw{border-color:var(--blue)} .logrow.draw .amt{color:var(--blue)}
+.logrow .txt{flex:1}
+.logrow .amt{font-weight:800;font-variant-numeric:tabular-nums}
+.logrow.win .amt{color:var(--green)} .logrow.lose .amt{color:var(--dim2)}
+.logrow.buy .amt{color:var(--gold)} .logrow.buff .amt{color:var(--purple)}
+.setrow{display:flex;flex-direction:column;gap:6px;padding:9px 0;border-bottom:1px dashed var(--line)}
+.setrow .top{display:flex;justify-content:space-between;align-items:center;font-size:12.5px}
+.setrow .top .k{color:var(--dim)} .setrow .top .v{font-weight:800;color:var(--gold);font-variant-numeric:tabular-nums}
+input[type=range]{width:100%;accent-color:var(--gold);height:18px}
+.help{font-size:12.2px;line-height:1.75;color:var(--dim)}
+.help b{color:var(--text)}
+.help .li{display:flex;gap:8px;margin-bottom:7px}
+.help .li i{font-style:normal;flex:0 0 20px;height:20px;border-radius:6px;display:grid;place-items:center;font-size:11px;background:var(--panel3);border:1px solid var(--line);color:var(--gold);font-weight:800}
+table.wt{width:100%;border-collapse:collapse;font-size:10.5px;font-variant-numeric:tabular-nums}
+table.wt th,table.wt td{border:1px solid var(--line);padding:1px 2px;text-align:center;color:var(--dim)}
+table.wt th{color:var(--dim2);background:var(--panel3)}
+table.wt tr.now td{background:rgba(255,207,92,.16);color:var(--gold);font-weight:800}
+
+/* 技能 */
+.skill{display:flex;gap:10px;align-items:center;padding:10px;border:1px solid var(--line);border-radius:var(--radius-sm);background:var(--panel3);margin-bottom:8px}
+.skill .ico{width:38px;height:38px;border-radius:var(--radius-sm);display:grid;place-items:center;font-size:20px;background:var(--soft);border:1px solid var(--line)}
+.skill .info{flex:1;min-width:0}
+.skill .nm{font-size:13px;font-weight:800;display:flex;align-items:center;gap:6px}
+.skill .ds{font-size:11.5px;color:var(--dim);margin-top:2px;line-height:1.5}
+.pips{display:flex;gap:3px;margin-top:4px}
+.pip{width:16px;height:6px;border-radius:3px;background:var(--line)}
+.pip.on{background:linear-gradient(90deg,var(--gold),var(--gold2))}
+.pending{font-size:10.5px;color:var(--gold2);border:1px solid var(--gold2);border-radius:999px;padding:1px 6px}
+
+/* 成就 */
+.acv{position:relative;border-radius:var(--radius-sm);padding:2px;background:var(--line);transition:transform .15s}
+.acv:hover{transform:translateY(-2px)}
+.acv .in{background:var(--panel3);border-radius:calc(var(--radius-sm) - 2px);padding:7px;height:100%;display:flex;flex-direction:column;gap:4px}
+.acv .ttl{font-size:11.5px;font-weight:800;display:flex;gap:4px;align-items:center;line-height:1.25}
+.acv .ic{font-size:14px}
+.acv .st{font-size:10.5px;color:var(--dim2)}
+.acv.locked{opacity:.55}
+.acv.locked .in{background:var(--soft)}
+.acv.ready{animation:acvPulse 1.4s ease-in-out infinite}
+@keyframes acvPulse{50%{filter:brightness(1.25)}}
+.acv.r-bronze{background:linear-gradient(135deg,#8a5a2b,#d99a5b)}
+.acv.r-silver{background:linear-gradient(135deg,#8f98a8,#e6eefc)}
+.acv.r-gold{background:linear-gradient(90deg,#8a5c10,#ffe89a,#8a5c10,#ffd873);background-size:300% 100%;animation:flow 3s linear infinite}
+.acv.r-red{background:linear-gradient(90deg,#8b1220,#ffd9dd,#8b1220,#ff8a94);background-size:300% 100%;animation:flow 2.4s linear infinite}
+.acv.r-orange{background:linear-gradient(90deg,#8b3a00,#ffd0a0,#8b3a00,#ff9d2e);background-size:300% 100%;animation:flow 2.4s linear infinite}
+.acv.r-rainbow{background:linear-gradient(90deg,#ff5168,#ffcf5c,#3ddc97,#5aa8ff,#a97bff,#ff5168);background-size:300% 100%;animation:flow 2s linear infinite}
+.acv.r-purple{background:linear-gradient(135deg,#5b3aa8,#d8c4ff,#a97bff);box-shadow:0 0 14px rgba(169,123,255,.5)}
+@keyframes flow{to{background-position:300% 0}}
+.acv .claim{margin-top:auto;font-size:11px;padding:4px 0;border-radius:6px;border:1px solid var(--gold2);background:linear-gradient(180deg,var(--gold),var(--gold2));color:#171106;font-weight:800;cursor:pointer}
+.acv .done{font-size:10.5px;color:var(--dim2);margin-top:auto}
+#acvTip{position:fixed;z-index:200;max-width:250px;padding:9px 11px;border-radius:10px;border:1px solid var(--line);
+  background:var(--panel);box-shadow:0 16px 40px rgba(0,0,0,.5);font-size:11.5px;line-height:1.6;color:var(--dim);display:none}
+#acvTip b{color:var(--text);display:block;margin-bottom:3px;font-size:12.5px}
+
+/* 皮肤 & 抽奖 */
+.skin{display:flex;gap:10px;align-items:center;padding:9px;border:1px solid var(--line);border-radius:var(--radius-sm);background:var(--panel3);margin-bottom:8px}
+.skin.on{border-color:var(--gold);box-shadow:0 0 14px rgba(255,190,60,.25)}
+.skin .ballprev{width:34px;height:34px;border-radius:50%}
+.skin .info{flex:1}
+.skin .nm{font-size:13px;font-weight:800}
+.skin .ds{font-size:11.5px;color:var(--dim);margin-top:2px}
+.wheelbox{position:relative;width:250px;height:250px;margin:6px auto 4px}
+#wheel{width:250px;height:250px;display:block}
+.pointer{position:absolute;left:50%;top:-6px;transform:translateX(-50%);width:0;height:0;
+  border-left:11px solid transparent;border-right:11px solid transparent;border-top:20px solid var(--gold);filter:drop-shadow(0 2px 6px rgba(0,0,0,.6));z-index:3}
+/* 弹珠尾迹 */
+.trail{position:absolute;left:0;top:0;width:13px;height:13px;border-radius:50%;pointer-events:none;z-index:5;
+  background:radial-gradient(circle,rgba(215,235,255,.95),rgba(120,170,255,0) 70%)}
+.trail[data-skin="yuanbao"]{background:radial-gradient(circle,rgba(255,235,160,.95),rgba(255,170,40,0) 70%)}
+.trail[data-skin="clover"]{background:radial-gradient(circle,rgba(180,255,215,.95),rgba(60,220,150,0) 70%)}
+.trail[data-skin="target"]{background:radial-gradient(circle,rgba(255,190,200,.95),rgba(255,70,100,0) 70%)}
+/* 点石成金光效 */
+.spark{position:absolute;width:9px;height:9px;border-radius:50%;pointer-events:none;z-index:7;
+  background:radial-gradient(circle,#fff,var(--gold) 45%,rgba(255,150,30,0));box-shadow:0 0 12px var(--gold2)}
+.alch-ring{position:absolute;border-radius:50%;border:2px solid var(--gold);pointer-events:none;z-index:7}
+.alch-ring.spec{border-color:var(--red);box-shadow:0 0 24px var(--red),inset 0 0 18px var(--red)}
+.alch-text{position:absolute;z-index:8;font-weight:900;font-size:15px;pointer-events:none;
+  text-shadow:0 2px 12px #000;animation:floatUp 1.5s ease-out forwards;white-space:nowrap}
+/* BUFF 获得卡片 */
+.buffcards{position:fixed;left:50%;top:18%;transform:translateX(-50%);z-index:150;display:flex;flex-direction:column;
+  gap:12px;align-items:center;pointer-events:none;max-width:92vw}
+.buffrow{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
+.buffcard{width:136px;padding:12px 10px;border-radius:14px;text-align:center;
+  background:linear-gradient(180deg,var(--panel3),var(--panel));border:2px solid var(--gold);
+  box-shadow:0 18px 44px rgba(0,0,0,.55);animation:cardIn .36s cubic-bezier(.2,1.4,.4,1) both}
+.buffcard.pity{border-color:var(--purple)}
+.buffcard .ic{font-size:30px;line-height:1.1}
+.buffcard .nm{font-size:14px;font-weight:900;margin-top:4px}
+.buffcard .ef{font-size:11.5px;color:var(--dim);margin-top:3px;line-height:1.45}
+.buffcard .dl{font-size:14.5px;font-weight:900;color:var(--gold);margin-top:6px}
+.buffcard.pity .dl{color:var(--purple)}
+@keyframes cardIn{from{opacity:0;transform:translateY(-20px) scale(.78)}to{opacity:1;transform:none}}
+/* 成就详情条（固定在面板底部，避免和领取按钮重叠） */
+.acvinfo{position:sticky;bottom:-1px;margin-top:10px;padding:10px 12px;border-radius:var(--radius-sm);
+  border:1px solid var(--line);background:linear-gradient(180deg,var(--panel3),var(--panel));
+  box-shadow:0 -8px 24px rgba(0,0,0,.35);font-size:12px;line-height:1.7;color:var(--dim);z-index:6}
+.acvinfo b{color:var(--text)}
+.acvinfo .rw{color:var(--gold);font-weight:800}
+.acvinfo .st{color:var(--gold2)}
+.drawlist{display:flex;flex-direction:column;gap:5px;font-size:12px;margin-top:8px}
+.drawrow{display:flex;justify-content:space-between;padding:6px 9px;border-radius:var(--radius-sm);background:var(--soft);border:1px solid var(--line)}
+.drawrow .a{font-weight:800;color:var(--gold)}
+.toastwrap{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);display:flex;flex-direction:column;gap:8px;z-index:99;align-items:center;pointer-events:none}
+.toast{padding:10px 18px;border-radius:var(--radius-sm);font-size:13px;font-weight:700;background:linear-gradient(180deg,var(--panel3),var(--panel));border:1px solid var(--line);box-shadow:0 12px 30px rgba(0,0,0,.5);animation:tin .3s ease-out}
+.toast.good{border-color:var(--green);color:var(--green)}
+.toast.bad{border-color:var(--red);color:var(--red)}
+.toast.buff{border-color:var(--purple);color:var(--purple)}
+.toast.acv{border-color:var(--gold);color:var(--gold)}
+@keyframes tin{from{opacity:0;transform:translateY(12px)}}
+@media (max-width:1240px){
+  body{overflow:auto}
+  .app{grid-template-columns:1fr;height:auto}
+  .machine{min-height:520px}
+  .col{min-height:auto}
+  .panelbody{max-height:none;overflow:visible}
+}
+</style>
+</head>
+<body data-theme="neon">
+<div class="app">
+  <!-- ================= 左：机器 ================= -->
+  <div class="col">
+    <div class="card hud">
+      <div class="brand">
+        <div class="logo">🎯</div>
+        <div><div class="t">弹珠机 PRO</div><div class="s">LUCKY PACHINKO</div></div>
+      </div>
+      <div class="stat gold"><div><div class="k">钱币</div><div class="v" id="hudCoins">0</div></div></div>
+      <div class="stat blue"><div><div class="k">弹珠</div><div class="v" id="hudMarbles">0</div></div></div>
+      <div class="stat red"><div><div class="k">命中</div><div class="v" id="hudHit">0</div></div></div>
+      <div class="stat green"><div><div class="k">幸运</div><div class="v" id="hudLuck">0</div></div></div>
+      <div class="stat purple"><div><div class="k">财运</div><div class="v" id="hudFortune">0</div></div></div>
+      <div class="spacer"></div>
+      <div class="pill" id="pillPity">激励：0/2</div>
+      <div class="pill" id="pillPeak">峰值：0</div>
+    </div>
+
+    <div class="card machine">
+      <div class="marquee"><span class="dot"></span><span class="scroll" id="marquee">投入弹珠后会开奖：先抽本轮奖励孔，再抽本轮统一命中奖励。</span></div>
+      <div class="buffbar" id="buffbar"></div>
+      <div class="board" id="board">
+        <div class="pegs"></div>
+        <div class="tray" id="tray"></div>
+        <div class="chute" id="chute"></div>
+        <div class="gate" id="gate"></div>
+        <div class="striker" id="striker"></div>
+        <div id="dividers"></div>
+        <div class="center-panel" id="centerPanel">
+          <div class="cp-label">本 轮 命 中 奖 励</div>
+          <div class="cp-value" id="cpValue">--<small> 颗</small></div>
+          <div class="cp-sub" id="cpSub">奖励孔 -- 个 / 12</div>
+          <div class="cp-calc" id="cpCalc">投入弹珠后开始抽取</div>
+        </div>
+        <div id="holes"></div>
+        <div id="ballLayer"></div>
+        <div id="floatLayer"></div>
+        <div class="roundbar" id="roundbar"></div>
+        <div class="hint" id="hint">用「投入 1 颗」或「批量投入」下注，投完按「确认」开奖</div>
+      </div>
+      <div class="controls">
+        <div class="row">
+          <button class="btn ghost" id="btnBuy">💰 投币 1 币 → 10 弹珠</button>
+          <span style="width:6px"></span>
+          <span class="label">投入弹珠</span>
+          <button class="btn primary" id="btnAdd1">＋ 投入 1 颗</button>
+          <input type="number" id="inpQty" min="1" max="99" value="5" />
+          <button class="btn" id="btnAddN">批量投入</button>
+          <span class="pill" id="betInfo">已投入 0 颗 · 倍率 ×0</span>
+          <div class="spacer"></div>
+          <button class="btn green" id="btnConfirm" disabled>确 认</button>
+          <button class="btn primary" id="btnFire" disabled>发 射</button>
+        </div>
+        <div class="row">
+          <button class="btn magic" id="btnAlchemy" disabled>🪄 点石成金</button>
+          <span class="pill" id="alchInfo">未学习</span>
+          <label class="toggle" id="tgAutoWrap"><input type="checkbox" id="tgAuto" />自动连发</label>
+          <label class="toggle" id="tgFastWrap"><input type="checkbox" id="tgFast" />加速</label>
+          <label class="toggle on" id="tgSoundWrap"><input type="checkbox" id="tgSound" checked />音效</label>
+          <div class="spacer"></div>
+          <button class="btn sm" id="btnTheme">🎨 主题</button>
+          <button class="btn danger sm" id="btnReset">重新开始</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= 右：面板 ================= -->
+  <div class="col">
+    <div class="card" style="flex:1;display:flex;flex-direction:column;min-height:0">
+      <div class="tabs" id="tabs">
+        <div class="tab sel" data-tab="stats">📊 战绩</div>
+        <div class="tab" data-tab="buff">✨ 状态</div>
+        <div class="tab" data-tab="skill">🎯 技能</div>
+        <div class="tab" data-tab="acv">🏆 成就</div>
+        <div class="tab" data-tab="skin">🎨 皮肤</div>
+        <div class="tab" data-tab="log">📜 记录</div>
+        <div class="tab" data-tab="set">⚙️ 设置</div>
+        <div class="tab" data-tab="help">❓ 说明</div>
+      </div>
+      <div class="panelbody" id="panelBody"></div>
+    </div>
+  </div>
+</div>
+<div class="toastwrap" id="toastWrap"></div>
+
+<script>
+/* =========================================================================
+   弹珠机 PRO v3
+   v2 基础：回合倍率 / 确认前滚动 / 三属性权重表 / 激励 BUFF / 促销 BUFF
+   v3 新增：① 5 套主题  ② 真实发射机构动画  ③ 技能加点（含点石成金）
+            ④ 34 个成就（稀有度 + 手动领奖）  ⑤ 皮肤与转盘抽奖
+   ========================================================================= */
+
+/* ------------------------------ 权重表 ------------------------------ */
+const LUCK_TABLE = [
+  [1,1,1,1,1,0,0,0,0,0,0,0],[1,2,2,2,2,1,0,0,0,0,0,0],[1,2,3,3,3,2,1,0,0,0,0,0],
+  [1,2,3,4,4,3,2,1,0,0,0,0],[1,2,3,4,5,4,3,2,1,0,0,0],[1,2,3,4,5,5,4,3,2,1,0,0],
+  [1,2,3,4,5,5,5,4,3,2,1,0],[1,2,3,4,5,5,5,5,4,3,2,1],[1,2,3,4,5,5,5,6,5,4,3,2],
+  [1,2,3,4,5,5,5,7,6,5,4,3],[1,2,3,4,5,5,5,7,7,6,5,4],[1,2,3,4,5,5,5,7,8,7,6,5],
+  [1,2,3,4,5,5,5,7,8,8,7,6],[1,2,3,4,5,5,5,7,8,8,8,7],[1,2,3,4,5,5,5,7,8,8,8,8],
+  [1,2,3,4,5,5,5,6,8,8,8,9],
+  [1,1,2,3,4,4,4,5,8,8,8,9],
+  [1,1,1,2,3,3,3,4,8,8,8,9],
+  [0,1,1,1,2,2,2,3,7,8,8,9],
+  [0,0,1,1,1,1,1,2,7,9,9,10],
+  [0,0,0,1,1,1,1,1,7,10,10,11]
+];
+const FORTUNE_TABLE = [
+  [0,1,1,1,0,0,0,0,0,0,0,0,0,0,0],[0,1,2,2,1,0,0,0,0,0,0,0,0,0,0],[0,1,2,3,2,1,0,0,0,0,0,0,0,0,0],
+  [0,1,2,3,3,2,1,0,0,0,0,0,0,0,0],[0,1,2,3,4,3,2,1,0,0,0,0,0,0,0],[0,1,2,3,4,4,3,2,1,0,0,0,0,0,0],
+  [0,1,2,3,4,5,4,3,2,1,0,0,0,0,0],[0,1,2,3,4,5,5,4,3,2,1,0,0,0,0],[0,1,2,3,4,5,5,5,4,3,2,1,0,0,0],
+  [0,1,2,3,4,5,5,5,5,4,3,2,1,0,0],[0,1,2,3,4,5,5,5,5,5,4,3,2,1,0],[0,1,2,3,4,5,5,5,5,5,5,4,3,2,1],
+  [0,1,2,3,4,5,5,5,5,5,5,5,4,3,2],[0,1,2,3,4,5,5,5,5,5,5,5,5,4,3],[0,1,2,3,4,5,5,5,5,5,5,5,5,5,4],
+  [0,1,2,3,4,5,5,5,5,5,5,5,5,5,6],
+  [0,1,1,2,3,4,4,5,5,5,5,5,5,5,6],
+  [0,1,1,1,2,3,3,4,4,5,5,5,5,6,7],
+  [0,0,1,1,1,2,2,3,3,4,4,6,6,7,8],
+  [0,0,0,1,1,1,1,2,2,3,3,6,6,8,9],
+  [0,0,0,0,1,1,1,1,1,2,2,7,7,9,10]
+];
+const PROMO_DEF = {
+  laiCai:  {name:'来财',     attr:'fortune', val:1, dmin:2, dmax:5, icon:'💰'},
+  caiYuan: {name:'财源广进', attr:'fortune', val:2, dmin:2, dmax:3, icon:'🏦'},
+  miaoZhun:{name:'瞄准',     attr:'hit',     val:1, dmin:2, dmax:5, icon:'🎯'},
+  baiFa:   {name:'百发百中', attr:'hit',     val:2, dmin:2, dmax:3, icon:'🏹'},
+  buJu:    {name:'布局',     attr:'luck',    val:1, dmin:2, dmax:5, icon:'🧩'},
+  mouLue:  {name:'谋略',     attr:'luck',    val:2, dmin:2, dmax:3, icon:'📜'}
+};
+const PROMO_KEYS = Object.keys(PROMO_DEF);
+const ATTR_NAME = {hit:'命中', luck:'幸运', fortune:'财运'};
+const PROMO_DUR_CAP = 10;
+const ATTR_CAP = 20;          // 幸运 / 财运 的生效上限（命中属性不设上限）
+
+/* ------------------------------ 主题 ------------------------------ */
+const THEMES = [
+  {id:'neon',     name:'深夜霓虹', icon:'🌌'},
+  {id:'daylight', name:'明亮日间', icon:'☀️'},
+  {id:'arcade',   name:'复古街机', icon:'👾'},
+  {id:'sakura',   name:'樱花和风', icon:'🌸'},
+  {id:'vegas',    name:'黄金赌场', icon:'🎰'}
+];
+
+/* ------------------------------ 技能 ------------------------------ */
+const SKILLS = {
+  hit:    {name:'命中', icon:'🎯', attr:'hit',     max:5, cost:lv=>100*(lv+1), desc:'每级 +1 命中：瞄准的孔权重更高，邻孔加成不变'},
+  luck:   {name:'幸运', icon:'🧩', attr:'luck',    max:5, cost:lv=>100*(lv+1), desc:'每级 +1 幸运：更容易抽出更多奖励孔'},
+  fortune:{name:'财运', icon:'💰', attr:'fortune', max:5, cost:lv=>100*(lv+1), desc:'每级 +1 财运：命中奖励数字更高'},
+  alchemy:{name:'点石成金', icon:'🪄', attr:null,   max:5, cost:lv=>[250,500,750,1000,1500][lv], desc:'确认后、发射前可点一个孔改造它'}
+};
+const SKILL_KEYS = Object.keys(SKILLS);
+const ALCH_DOWN=[0,0.125,0.25,0.40,0.60,0.75];   // 非奖励孔 → 奖励孔
+const ALCH_UP  =[0,0.15,0.25,0.35,0.45,0.65];    // 奖励孔 → 特殊奖励孔
+
+/* ------------------------------ 成就 ------------------------------ */
+const RARITY = {
+  bronze:{n:'铜',cls:'r-bronze'}, silver:{n:'银',cls:'r-silver'}, gold:{n:'金',cls:'r-gold'},
+  red:{n:'红',cls:'r-red'}, orange:{n:'橙',cls:'r-orange'}, rainbow:{n:'彩色',cls:'r-rainbow'},
+  purple:{n:'紫（特殊）',cls:'r-purple'}
+};
+const ACHIEVEMENTS = [
+  {id:'a01',n:'开门红',     r:'purple', icon:'🌟', d:'第一次命中奖励孔',              rw:{attr:{luck:1}},      c:L=>L.wins>=1},
+  {id:'a02',n:'小试牛刀',   r:'bronze', icon:'🥉', d:'连续命中 3 次',                 rw:{coins:2},            c:L=>L.bestStreak>=3},
+  {id:'a03',n:'意气风发',   r:'silver', icon:'🥈', d:'连续命中 5 次',                 rw:{coins:3,attr:{hit:1}},c:L=>L.bestStreak>=5},
+  {id:'a04',n:'百发百中',   r:'gold',   icon:'🥇', d:'连续命中 7 次',                 rw:{coins:5},            c:L=>L.bestStreak>=7},
+  {id:'a05',n:'神射手',     r:'red',    icon:'🏹', d:'连续命中 10 次',                rw:{coins:8,attr:{hit:1}},c:L=>L.bestStreak>=10},
+  {id:'a06',n:'初生牛犊',   r:'bronze', icon:'🐮', d:'累计命中 5 次',                 rw:{coins:2},            c:L=>L.wins>=5},
+  {id:'a07',n:'跃跃欲试',   r:'silver', icon:'✨', d:'累计命中 10 次',                rw:{coins:3},            c:L=>L.wins>=10},
+  {id:'a08',n:'中流砥柱',   r:'gold',   icon:'🗿', d:'累计命中 20 次',                rw:{coins:3},            c:L=>L.wins>=20},
+  {id:'a09',n:'坚持不懈',   r:'red',    icon:'🔥', d:'累计命中 30 次',                rw:{coins:4},            c:L=>L.wins>=30},
+  {id:'a10',n:'坚持不懈II', r:'orange', icon:'🔥', d:'累计命中 50 次',                rw:{coins:5},            c:L=>L.wins>=50},
+  {id:'a11',n:'坚持不懈III',r:'rainbow',icon:'🌈', d:'累计命中 100 次',               rw:{coins:10},           c:L=>L.wins>=100},
+  {id:'a12',n:'神射手II',   r:'red',    icon:'🏹', d:'连续命中 15 次',                rw:{coins:10,attr:{hit:1}},c:L=>L.bestStreak>=15},
+  {id:'a13',n:'神射手III',  r:'orange', icon:'🏹', d:'连续命中 20 次',                rw:{coins:15,attr:{hit:1}},c:L=>L.bestStreak>=20},
+  {id:'a14',n:'神射手IV',   r:'rainbow',icon:'🏹', d:'连续命中 25 次',                rw:{coins:20,attr:{hit:1}},c:L=>L.bestStreak>=25},
+  {id:'a15',n:'大满贯',     r:'bronze', icon:'🎳', d:'1 回合内赢取至少 10 颗弹珠',    rw:{coins:1},            c:L=>L.bestWin>=10},
+  {id:'a16',n:'大满贯II',   r:'silver', icon:'🎳', d:'1 回合内赢取至少 20 颗弹珠',    rw:{coins:2},            c:L=>L.bestWin>=20},
+  {id:'a17',n:'大满贯III',  r:'gold',   icon:'🎳', d:'1 回合内赢取至少 30 颗弹珠',    rw:{coins:3},            c:L=>L.bestWin>=30},
+  {id:'a18',n:'大满贯IV',   r:'red',    icon:'🎳', d:'1 回合内赢取至少 50 颗弹珠',    rw:{coins:5},            c:L=>L.bestWin>=50},
+  {id:'a19',n:'大满贯V',    r:'orange', icon:'🎳', d:'1 回合内赢取至少 100 颗弹珠',   rw:{coins:8},            c:L=>L.bestWin>=100},
+  {id:'a20',n:'大满贯VI',   r:'rainbow',icon:'🎳', d:'1 回合内赢取至少 150 颗弹珠',   rw:{coins:10},           c:L=>L.bestWin>=150},
+  {id:'a21',n:'尊贵的顾客', r:'purple', icon:'💎', d:'第一次消耗币购买弹珠',          rw:{attr:{luck:1}},      c:L=>L.buys>=1},
+  {id:'a22',n:'客人',       r:'silver', icon:'🧾', d:'累计消耗至少 5 个币购买弹珠',   rw:{attr:{luck:1}},      c:L=>L.coinsSpent>=5},
+  {id:'a23',n:'老板',       r:'gold',   icon:'💼', d:'累计消耗至少 12 个币购买弹珠',  rw:{attr:{luck:1}},      c:L=>L.coinsSpent>=12},
+  {id:'a24',n:'大老板',     r:'red',    icon:'🏢', d:'累计消耗至少 25 个币购买弹珠',  rw:{attr:{luck:1}},      c:L=>L.coinsSpent>=25},
+  {id:'a25',n:'财阀',       r:'orange', icon:'🏦', d:'累计消耗至少 50 个币购买弹珠',  rw:{attr:{luck:1}},      c:L=>L.coinsSpent>=50},
+  {id:'a26',n:'富可敌国',   r:'rainbow',icon:'👑', d:'累计消耗至少 100 个币购买弹珠', rw:{attr:{luck:1}},      c:L=>L.coinsSpent>=100},
+  {id:'a27',n:'第一次',     r:'purple', icon:'🫧', d:'第一次投入弹珠',                rw:{attr:{fortune:1}},   c:L=>L.marblesIn>=1},
+  {id:'a28',n:'有来有回',   r:'bronze', icon:'🔁', d:'累计投入至少 20 个弹珠',        rw:{coins:1},            c:L=>L.marblesIn>=20},
+  {id:'a29',n:'有去无回',   r:'silver', icon:'🕳️', d:'累计投入至少 50 个弹珠',        rw:{coins:2},            c:L=>L.marblesIn>=50},
+  {id:'a30',n:'弹珠还够吗', r:'gold',   icon:'❓', d:'累计投入至少 150 个弹珠',       rw:{attr:{fortune:1}},   c:L=>L.marblesIn>=150},
+  {id:'a31',n:'赌博可耻',   r:'red',    icon:'🚫', d:'累计投入至少 300 个弹珠',       rw:{attr:{fortune:1}},   c:L=>L.marblesIn>=300},
+  {id:'a32',n:'回本',       r:'orange', icon:'📈', d:'累计投入至少 750 个弹珠',       rw:{attr:{fortune:1}},   c:L=>L.marblesIn>=750},
+  {id:'a33',n:'财富五车',   r:'rainbow',icon:'🚚', d:'累计投入至少 2000 个弹珠',      rw:{attr:{fortune:1}},   c:L=>L.marblesIn>=2000},
+  {id:'a34',n:'重头再来',   r:'purple', icon:'🔧', d:'第一次没有命中任何东西',        rw:{attr:{fortune:1}},   c:L=>L.misses>=1},
+  /* ---- 追加：资本 / 豪赌 系列 ---- */
+  {id:'a35',n:'小资本',     r:'bronze', icon:'🪙', d:'累计获得超过 500 个弹珠',        rw:{attr:{fortune:1}},   c:L=>L.marblesGot>500},
+  {id:'a36',n:'大资本',     r:'silver', icon:'💵', d:'累计获得超过 1000 个弹珠',       rw:{coins:5},            c:L=>L.marblesGot>1000},
+  {id:'a37',n:'大财阀',     r:'gold',   icon:'🏛️', d:'累计获得超过 3000 个弹珠',       rw:{coins:10},           c:L=>L.marblesGot>3000},
+  {id:'a38',n:'财力雄厚',   r:'red',    icon:'💪', d:'累计获得超过 8000 个弹珠',       rw:{attr:{fortune:1}},   c:L=>L.marblesGot>8000},
+  {id:'a39',n:'独霸一方',   r:'orange', icon:'🗺️', d:'累计获得超过 20000 个弹珠',      rw:{coins:25},           c:L=>L.marblesGot>20000},
+  {id:'a40',n:'富可敌国',   r:'rainbow',icon:'👑', d:'累计获得超过 100000 个弹珠',     rw:{attr:{fortune:1}},   c:L=>L.marblesGot>100000},
+  {id:'a41',n:'赌狗',       r:'bronze', icon:'🎲', d:'单回合发射前投入至少 10 个弹珠', rw:{coins:1},            c:L=>L.bestBet>=10},
+  {id:'a42',n:'赌徒',       r:'silver', icon:'🎲', d:'单回合发射前投入至少 50 个弹珠', rw:{attr:{hit:1}},       c:L=>L.bestBet>=50},
+  {id:'a43',n:'赌神',       r:'gold',   icon:'🃏', d:'单回合发射前投入至少 500 个弹珠',rw:{attr:{hit:1}},       c:L=>L.bestBet>=500},
+  {id:'a44',n:'梭哈',       r:'red',    icon:'🀄', d:'单回合发射前投入至少 2000 个弹珠',rw:{attr:{hit:1}},      c:L=>L.bestBet>=2000},
+  {id:'a45',n:'梭哈II',     r:'orange', icon:'🀄', d:'单回合发射前投入至少 5000 个弹珠',rw:{attr:{hit:1}},      c:L=>L.bestBet>=5000},
+  {id:'a46',n:'梭哈III',    r:'rainbow',icon:'🀄', d:'单回合发射前投入至少 20000 个弹珠',rw:{attr:{hit:1}},     c:L=>L.bestBet>=20000}
+];
+
+/* ------------------------------ 皮肤 & 奖池 ------------------------------ */
+const SKINS = {
+  normal: {name:'默认球',   icon:'⚪', attr:null,      per:0, cap:0, cost:0,  desc:'无任何加成'},
+  yuanbao:{name:'元宝球',   icon:'🟡', attr:'fortune', per:1, cap:3, cost:5,  desc:'财运 +1 / 个（效果上限 +3）'},
+  clover: {name:'四叶草球', icon:'🟢', attr:'luck',    per:1, cap:3, cost:5,  desc:'幸运 +1 / 个（效果上限 +3）'},
+  target: {name:'标靶球',   icon:'🔴', attr:'hit',     per:1, cap:3, cost:5,  desc:'命中 +1 / 个（效果上限 +3）'}
+};
+const SKIN_KEYS = Object.keys(SKINS);
+const LOTTERY = [
+  {id:'yuanbao', label:'元宝球',   w:1,  color:'#ffcf5c'},
+  {id:'clover',  label:'四叶草球', w:1,  color:'#4be09a'},
+  {id:'target',  label:'标靶球',   w:1,  color:'#ff5168'},
+  {id:'marbles3',label:'3 个弹珠', w:5,  color:'#5aa8ff'},
+  {id:'coin1',   label:'1 个币',   w:1,  color:'#c9a227'},
+  {id:'none',    label:'谢谢惠顾', w:1,  color:'#6b7488'}
+];
+
+/* ------------------------------ 可调参数 ------------------------------ */
+const DEFAULTS = {
+  holeCount:12, startCoins:10, startMarbles:20, coinPerBuy:1, marblePerBuy:10,
+  promoDraws:2, rollMs:110, pityMin:2, pityMax:4, wxtdBonus:1,
+  skinCost:5, animSpeed:1
+};
+let CFG = Object.assign({}, DEFAULTS);
+
+/* ------------------------------ 档案 & 状态 ------------------------------ */
+const newProfile = ()=>({
+  skills:{hit:0,luck:0,fortune:0,alchemy:0},
+  acv:{}, acvAttr:{hit:0,luck:0,fortune:0},
+  skins:{normal:1,yuanbao:0,clover:0,target:0},
+  equip:'normal', draws:0, drawn:0, theme:'neon',
+  life:{wins:0,bestStreak:0,bestWin:0,coinsSpent:0,marblesIn:0,buys:0,rounds:0,misses:0,
+        marblesGot:0,peakMarbles:0,bestBet:0}
+});
+let profile = newProfile();
+const newStats = ()=>({
+  rounds:0, wins:0, marblesIn:0, marblesOut:0, coinsSpent:0, buys:0,
+  bestWin:0, bestMult:0, streak:0, bestStreak:0, missStreak:0,
+  peakAsset:0, bestEver:0, buffsGained:0, promoGained:0, alchemy:0, specialHits:0
+});
+let state = {
+  coins:CFG.startCoins, marbles:CFG.startMarbles, phase:'ready',
+  roundBet:0, rewardHoles:[], specialHoles:[], rewardValue:0, target:null,
+  preview:{holes:[],value:0},
+  pity:{counter:0,threshold:2,hit:false,luck:false,fortune:false,wxtd:0},
+  promo:{}, actSkills:{hit:0,luck:0,fortune:0,alchemy:0}, alchemyUsed:false, busy:false,
+  stats:newStats(), log:[], curve:[],
+  auto:false, fast:false, sound:true,
+  startCoins:CFG.startCoins, startMarbles:CFG.startMarbles
+};
+let rollTimer=null;
+
+const SAVE_KEY='marble-pachinko-pro-v3';
+const PROF_KEY='marble-pachinko-profile-v1';
+
+/* ------------------------------ 工具 ------------------------------ */
+const $=(s,r=document)=>r.querySelector(s);
+const $$=(s,r=document)=>Array.prototype.slice.call(r.querySelectorAll(s));
+const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
+const randInt=(a,b)=>Math.floor(Math.random()*(b-a+1))+a;
+const fmtNum=v=>Number(v||0).toLocaleString('zh-CN');
+const fmtPct=v=>(v*100).toFixed(1)+'%';
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const wait=ms=>new Promise(r=>setTimeout(r,Math.max(0,ms)));
+function weightedIndex(w){ let t=0; for(let i=0;i<w.length;i++) t+=Math.max(0,w[i]);
+  if(t<=0) return 0; let r=Math.random()*t;
+  for(let i=0;i<w.length;i++){ r-=Math.max(0,w[i]); if(r<0) return i; } return w.length-1; }
+function weightedPick(arr){ const w=arr.map(x=>x.w); return arr[weightedIndex(w)]; }
+function nonzeroRange(w){ let lo=-1,hi=-1; for(let i=0;i<w.length;i++) if(w[i]>0){ if(lo<0)lo=i; hi=i; } return lo<0?[0,w.length-1]:[lo,hi]; }
+
+/* ------------------------------ 音效 ------------------------------ */
+let actx=null;
+function beep(f,d,t,v,dl){ if(!state.sound) return;
+  try{ actx=actx||new (window.AudioContext||window.webkitAudioContext)();
+    const t0=actx.currentTime+(dl||0), o=actx.createOscillator(), g=actx.createGain();
+    o.type=t||'sine'; o.frequency.setValueAtTime(f,t0);
+    g.gain.setValueAtTime(0,t0); g.gain.linearRampToValueAtTime(v||0.05,t0+0.012);
+    g.gain.exponentialRampToValueAtTime(0.0001,t0+(d||0.12));
+    o.connect(g); g.connect(actx.destination); o.start(t0); o.stop(t0+(d||0.12)+0.03);
+  }catch(e){} }
+const SFX={
+  tick:()=>beep(880,0.03,'square',0.014),
+  drop:()=>beep(520,0.08,'triangle',0.05),
+  gate:()=>beep(220,0.09,'square',0.04),
+  hit:()=>beep(140,0.06,'square',0.06),
+  win:()=>{beep(660,0.12,'square',0.05,0);beep(880,0.12,'square',0.05,0.09);beep(1180,0.22,'square',0.05,0.18);},
+  big:()=>{beep(660,0.1,'square',0.05,0);beep(990,0.1,'square',0.05,0.08);beep(1320,0.1,'square',0.05,0.16);beep(1760,0.3,'square',0.05,0.24);},
+  miss:()=>beep(150,0.16,'sawtooth',0.03),
+  coin:()=>{beep(1050,0.06,'square',0.05,0);beep(1500,0.1,'square',0.045,0.055);},
+  buff:()=>{beep(700,0.09,'triangle',0.045,0);beep(1050,0.14,'triangle',0.045,0.08);},
+  confirm:()=>{beep(400,0.07,'square',0.04,0);beep(900,0.12,'square',0.04,0.06);},
+  magic:()=>{beep(500,0.09,'sawtooth',0.05,0);beep(1400,0.22,'sawtooth',0.045,0.07);},
+  acv:()=>{beep(880,0.1,'triangle',0.05,0);beep(1320,0.16,'triangle',0.05,0.09);beep(1760,0.24,'triangle',0.045,0.19);},
+  click:()=>beep(720,0.04,'triangle',0.03)
+};
+
+/* ------------------------------ 属性 ------------------------------ */
+function skinBonus(name){
+  const sk=SKINS[profile.equip]; if(!sk||!sk.attr||sk.attr!==name) return 0;
+  return Math.min(sk.cap, (profile.skins[profile.equip]||0)*sk.per);
+}
+function attrParts(name){
+  const p={pity:state.pity[name]?1:0, promo:0, acv:(profile.acvAttr[name]||0), skill:(state.actSkills[name]||0), skin:skinBonus(name)};
+  for(const k of PROMO_KEYS){ const b=state.promo[k]; if(b&&b.rounds>0&&PROMO_DEF[k].attr===name) p.promo+=PROMO_DEF[k].val; }
+  return p;
+}
+function attr(name){
+  const p=attrParts(name), v=p.pity+p.promo+p.acv+p.skill+p.skin;
+  return name==='hit' ? Math.max(0,v) : clamp(v,0,ATTR_CAP);   // 命中不设上限
+}
+function promoActive(k){ const b=state.promo[k]; return !!(b&&b.rounds>0); }
+function hasPityBuff(){ return state.pity.hit||state.pity.luck||state.pity.fortune||state.pity.wxtd>0; }
+const luckRow=()=>LUCK_TABLE[attr('luck')];
+const fortuneRow=()=>FORTUNE_TABLE[attr('fortune')];
+const drawHoleCount=()=>weightedIndex(luckRow())+1;
+const drawRewardValue=()=>weightedIndex(fortuneRow())+1;
+function holeWeights(target){
+  const w=new Array(CFG.holeCount).fill(1);
+  if(target!==null&&target!==undefined&&target>=0){
+    w[target]+=attr('hit');
+    if(target>0) w[target-1]+=1;
+    if(target<CFG.holeCount-1) w[target+1]+=1;
+  }
+  return w;
+}
+function winChance(target){
+  const w=holeWeights(target); let tot=0,win=0;
+  for(let i=0;i<w.length;i++){ tot+=w[i]; if(state.rewardHoles.indexOf(i)>=0) win+=w[i]; }
+  return tot? win/tot : 0;
+}
+const pickLanding=t=>weightedIndex(holeWeights(t));
+function bestTarget(){ let b=null,v=-1; for(let i=0;i<CFG.holeCount;i++){ const x=winChance(i); if(x>v){v=x;b=i;} } return b; }
+function pickRewardHoles(k){
+  k=clamp(k,1,CFG.holeCount);
+  const pool=[]; for(let i=0;i<CFG.holeCount;i++) pool.push(i);
+  for(let i=pool.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); const t=pool[i]; pool[i]=pool[j]; pool[j]=t; }
+  return pool.slice(0,k).sort((a,b)=>a-b);
+}
+
+/* ------------------------------ 存档 ------------------------------ */
+function save(){
+  try{ localStorage.setItem(SAVE_KEY, JSON.stringify({cfg:CFG,state:state}));
+       localStorage.setItem(PROF_KEY, JSON.stringify(profile)); }catch(e){}
+}
+function load(){
+  try{
+    const pr=localStorage.getItem(PROF_KEY);
+    if(pr){ const d=JSON.parse(pr);
+      profile=Object.assign(newProfile(), d);
+      profile.skills=Object.assign(newProfile().skills, d.skills||{});
+      profile.acvAttr=Object.assign({hit:0,luck:0,fortune:0}, d.acvAttr||{});
+      profile.skins=Object.assign(newProfile().skins, d.skins||{});
+      profile.acv=d.acv||{};
+      profile.life=Object.assign(newProfile().life, d.life||{});
+    }
+    const raw=localStorage.getItem(SAVE_KEY);
+    if(raw){ const d=JSON.parse(raw);
+      if(d.cfg) CFG=Object.assign({},DEFAULTS,d.cfg);
+      if(d.state){
+        state=Object.assign(state,d.state);
+        state.stats=Object.assign(newStats(), d.state.stats||{});
+        state.pity=Object.assign({counter:0,threshold:2,hit:false,luck:false,fortune:false,wxtd:0}, d.state.pity||{});
+        state.promo=Object.assign({}, d.state.promo||{});
+        state.actSkills=Object.assign({hit:0,luck:0,fortune:0,alchemy:0}, d.state.actSkills||profile.skills);
+        for(const k of PROMO_KEYS){ if(state.promo[k]) state.promo[k].lv=state.promo[k].rounds>0?1:0; }
+        if(!Array.isArray(state.log)) state.log=[];
+        if(!Array.isArray(state.curve)) state.curve=[];
+        state.phase='ready';
+        if(state.roundBet>0){ state.marbles+=state.roundBet; state.roundBet=0; }
+        state.rewardHoles=[]; state.specialHoles=[]; state.rewardValue=0; state.target=null;
+        state.preview={holes:[],value:0}; state.alchemyUsed=false;
+      }
+    }
+    /* 进入页面时，生效技能 = 已购买技能（回合内加点仍然只在下回合生效） */
+    state.actSkills=Object.assign({}, profile.skills);
+    return true;
+  }catch(e){ return false; }
+}
+function hardReset(){
+  localStorage.removeItem(SAVE_KEY);
+  CFG=Object.assign({},DEFAULTS);
+  const {sound,fast}=state;
+  state={ coins:CFG.startCoins, marbles:CFG.startMarbles, phase:'ready',
+    roundBet:0, rewardHoles:[], specialHoles:[], rewardValue:0, target:null, preview:{holes:[],value:0},
+    pity:{counter:0,threshold:randInt(CFG.pityMin,CFG.pityMax),hit:false,luck:false,fortune:false,wxtd:0},
+    promo:{}, actSkills:Object.assign({},profile.skills), alchemyUsed:false,
+    stats:newStats(), log:[], curve:[CFG.startMarbles],
+    auto:false, fast:fast, sound:sound, startCoins:CFG.startCoins, startMarbles:CFG.startMarbles };
+  buildHoles(); renderHoles(); renderHUD(); renderPanel();
+  toast('已重新开始（技能/成就/皮肤保留）','good'); save();
+}
+function wipeAll(){
+  localStorage.removeItem(SAVE_KEY); localStorage.removeItem(PROF_KEY);
+  profile=newProfile(); applyTheme(profile.theme);
+  hardReset(); toast('全部数据已清空','good');
+}
+
+/* ------------------------------ 提示 ------------------------------ */
+function toast(msg,kind){
+  const el=document.createElement('div'); el.className='toast '+(kind||''); el.textContent=msg;
+  $('#toastWrap').appendChild(el);
+  setTimeout(()=>{el.style.transition='.3s';el.style.opacity='0';el.style.transform='translateY(8px)';},1600);
+  setTimeout(()=>el.remove(),2050);
+}
+function say(m){ $('#marquee').textContent=m; }
+function setHint(h){ $('#hint').innerHTML=h; }
+
+/* =========================================================================
+   主题
+   ========================================================================= */
+function applyTheme(id){
+  if(!THEMES.some(t=>t.id===id)) id='neon';
+  profile.theme=id; document.body.dataset.theme=id;
+  const t=THEMES.find(x=>x.id===id);
+  $('#btnTheme').textContent=t.icon+' '+t.name;
+}
+function cycleTheme(){
+  const i=THEMES.findIndex(t=>t.id===profile.theme);
+  const n=THEMES[(i+1)%THEMES.length];
+  applyTheme(n.id); SFX.click(); toast('主题：'+n.name,'good'); save();
+}
+
+/* =========================================================================
+   机构动画（斜坡准备区 → 发射槽 → 击打 → 上行 → 落孔 → 回斜坡）
+   ========================================================================= */
+let geom={};
+function layoutMech(){
+  const W=boardEl.clientWidth,H=boardEl.clientHeight;
+  if(!W||!H) return;
+  const n=CFG.holeCount;
+  const padX=Math.max(38,W*0.055);
+  const usable=Math.max(1,W-padX*2);
+  const baseY=H-Math.max(84,Math.min(110,H*0.22));
+  const amp=Math.min(24,H*0.055);
+  const trayTop=baseY+36, trayBottom=H-6;
+  const chuteW=26, chuteX=W-44, chuteTop=18, chuteBottom=trayTop+8;
+  geom={W,H,padX,usable,baseY,amp,trayTop,trayBottom,chuteW,chuteX,chuteTop,chuteBottom,n};
+
+  for(let i=0;i<n;i++){
+    const t=n===1?0.5:i/(n-1);
+    holeEls[i].style.left=(padX+usable*t)+'px';
+    holeEls[i].style.top=(baseY+amp*Math.sin(Math.PI*t))+'px';
+  }
+  const dv=$('#dividers'); dv.innerHTML='';
+  for(let i=0;i<n-1;i++){
+    const t1=i/(n-1), t2=(i+1)/(n-1);
+    const x1=padX+usable*t1, x2=padX+usable*t2;
+    const y=Math.max(baseY+amp*Math.sin(Math.PI*t1), baseY+amp*Math.sin(Math.PI*t2));
+    const d=document.createElement('div'); d.className='divider';
+    d.style.left=((x1+x2)/2)+'px'; d.style.top=(y-14)+'px'; d.style.height=Math.max(10,trayTop-y+16)+'px';
+    dv.appendChild(d);
+  }
+  const tray=$('#tray'); tray.style.top=trayTop+'px'; tray.style.height=(trayBottom-trayTop)+'px';
+  const ch=$('#chute'); ch.style.left=(chuteX-chuteW/2)+'px'; ch.style.top=chuteTop+'px';
+  ch.style.width=chuteW+'px'; ch.style.height=(chuteBottom-chuteTop)+'px';
+  const gt=$('#gate'); gt.style.left=(chuteX-chuteW/2-12)+'px'; gt.style.top=(chuteBottom-30)+'px';
+  gt.style.width='26px'; gt.style.height='5px';
+  const st=$('#striker'); st.style.left=(chuteX-chuteW/2+3)+'px'; st.style.top=(chuteBottom-10)+'px';
+  st.style.width=(chuteW-6)+'px'; st.style.height='12px';
+}
+function holeCenter(i){
+  const r=holeEls[i].getBoundingClientRect(), b=boardEl.getBoundingClientRect();
+  return {x:r.left-b.left+r.width/2, y:r.top-b.top+r.height/2};
+}
+function ballAt(ball,p){ ball.style.transform='translate('+p.x+'px,'+p.y+'px) translate(-50%,-50%)'; }
+function moveBall(ball,to,ms,ease){
+  const from=ball.__pos||to;
+  const kf=[{transform:'translate('+from.x+'px,'+from.y+'px) translate(-50%,-50%)'},
+            {transform:'translate('+to.x+'px,'+to.y+'px) translate(-50%,-50%)'}];
+  ball.__pos=to;
+  return ball.animate(kf,{duration:ms,easing:ease||'ease-in-out',fill:'forwards'}).finished.catch(()=>{});
+}
+function arcBall(ball,to,ms,peak){
+  const from=ball.__pos||to;
+  const kf=[];
+  for(let i=0;i<=12;i++){
+    const t=i/12;
+    const x=from.x+(to.x-from.x)*t;
+    const y=from.y+(to.y-from.y)*t - Math.sin(Math.PI*t)*peak;
+    kf.push({offset:t,transform:'translate('+x+'px,'+y+'px) translate(-50%,-50%)'});
+  }
+  ball.__pos=to;
+  return ball.animate(kf,{duration:ms,easing:'linear',fill:'forwards'}).finished.catch(()=>{});
+}
+/* 完整体验：确认后调用 */
+async function launchSequence(landed){
+  const g=geom;
+  if(state.fast) return;
+  const sp=1/Math.max(0.5,CFG.animSpeed||1);
+  const ball=document.createElement('div');
+  ball.className='ball'; ball.dataset.skin=profile.equip;
+  ballLayer.appendChild(ball);
+  const start={x:g.chuteX-g.chuteW/2-30, y:g.trayBottom-14};
+  ball.__pos=start; ballAt(ball,start);
+  startTrail(ball);
+  await wait(120*sp);
+  // ① 隔板打开
+  $('#gate').classList.add('open'); SFX.gate();
+  await wait(260*sp);
+  // ② 弹珠流入发射槽
+  await moveBall(ball,{x:g.chuteX,y:g.chuteBottom-16},420*sp,'ease-in-out');
+  // ③ 隔板关闭
+  $('#gate').classList.remove('open');
+  await wait(180*sp);
+  // ④ 击打装置
+  const st=$('#striker'); st.classList.add('push'); SFX.hit();
+  await wait(110*sp);
+  st.classList.remove('push');
+  // ⑤ 沿发射槽一路向上
+  await moveBall(ball,{x:g.chuteX,y:g.chuteTop+14},300*sp,'ease-out');
+  // ⑥ 被弹到 12 个孔上方，再落到实际命中孔
+  const hc=holeCenter(landed);
+  await arcBall(ball,{x:hc.x,y:Math.max(24,hc.y-90)},420*sp,90);
+  await moveBall(ball,{x:hc.x,y:hc.y},180*sp,'ease-in');
+  // ⑦ 最后掉进孔下方斜坡准备区
+  await moveBall(ball,{x:hc.x,y:g.trayBottom-12},300*sp,'ease-in');
+  stopTrail();
+  ball.style.transition='opacity .35s'; ball.style.opacity='0';
+  setTimeout(()=>ball.remove(),420);
+}
+
+/* ------------------------------ 视觉特效 ------------------------------ */
+/* 弹珠尾迹 */
+let trailTimer=null, cardSeed=0;
+function startTrail(ball){
+  stopTrail();
+  trailTimer=setInterval(()=>{
+    if(!ball.isConnected) return;
+    const r=ball.getBoundingClientRect(), b=boardEl.getBoundingClientRect();
+    const d=document.createElement('div'); d.className='trail'; d.dataset.skin=profile.equip;
+    const x=r.left-b.left+r.width/2, y=r.top-b.top+r.height/2;
+    d.style.left=x+'px'; d.style.top=y+'px';
+    d.style.transform='translate(-50%,-50%) scale('+(0.55+Math.random()*0.6).toFixed(2)+')';
+    floatLayer.appendChild(d);
+    d.animate([{opacity:.85},{opacity:0}],{duration:520,easing:'ease-out',fill:'forwards'});
+    setTimeout(()=>d.remove(),540);
+  },24);
+}
+function stopTrail(){ if(trailTimer){ clearInterval(trailTimer); trailTimer=null; } }
+/* 点石成金：光效汇聚 → 光环 → 结果文字 */
+async function alchemyFx(i, success, kind){
+  const pos=holeCenter(i), layer=floatLayer;
+  if(state.fast){ await wait(80); return; }
+  for(let k=0;k<12;k++){
+    const a=Math.random()*Math.PI*2, dist=56+Math.random()*46;
+    const sx=pos.x+Math.cos(a)*dist, sy=pos.y+Math.sin(a)*dist;
+    const d=document.createElement('div'); d.className='spark';
+    d.style.left=sx+'px'; d.style.top=sy+'px'; d.style.transform='translate(-50%,-50%)';
+    layer.appendChild(d);
+    d.animate([{transform:'translate(-50%,-50%) scale(1)',opacity:1},
+               {transform:'translate('+(pos.x-sx)+'px,'+(pos.y-sy)+'px) translate(-50%,-50%) scale(.3)',opacity:.15}],
+      {duration:480+Math.random()*200,easing:'ease-in',fill:'forwards'});
+    setTimeout(()=>d.remove(),760);
+  }
+  SFX.magic();
+  await wait(420);
+  [12,30].forEach((rad,idx)=>{
+    const ring=document.createElement('div');
+    ring.className='alch-ring'+(success&&kind==='special'?' spec':'');
+    ring.style.left=pos.x+'px'; ring.style.top=pos.y+'px';
+    ring.style.width=rad+'px'; ring.style.height=rad+'px'; ring.style.transform='translate(-50%,-50%)';
+    layer.appendChild(ring);
+    ring.animate([{transform:'translate(-50%,-50%) scale(.4)',opacity:.95},
+                  {transform:'translate(-50%,-50%) scale(3.6)',opacity:0}],
+      {duration:640,easing:'ease-out',fill:'forwards',delay:idx*90});
+    setTimeout(()=>ring.remove(),1250);
+  });
+  await wait(340);
+  const txt=document.createElement('div'); txt.className='alch-text';
+  txt.style.left=pos.x+'px'; txt.style.top=(pos.y-36)+'px';
+  txt.style.color = success ? (kind==='special'?'var(--red)':'var(--gold)') : 'var(--dim)';
+  txt.textContent = success ? (kind==='special'?'★ 特殊奖励孔！':'✓ 变成奖励孔') : '改造失败…';
+  layer.appendChild(txt); setTimeout(()=>txt.remove(),1600);
+  const hole=holeEls[i]; hole.classList.add('flash'); setTimeout(()=>hole.classList.remove('flash'),520);
+}
+/* BUFF 获得卡片：并排展示 → 缩小飞向 BUFF 栏 */
+function showBuffCards(cards){
+  if(!cards||!cards.length) return;
+  let wrap=$('#buffCards');
+  if(!wrap){ wrap=document.createElement('div'); wrap.className='buffcards'; wrap.id='buffCards'; document.body.appendChild(wrap); }
+  const row=document.createElement('div'); row.className='buffrow';
+  cardSeed=0;
+  const els=cards.map(c=>{
+    const d=document.createElement('div'); d.className='buffcard'+(c.pity?' pity':'');
+    d.innerHTML='<div class="ic">'+c.icon+'</div><div class="nm">'+c.name+'</div>'+
+                '<div class="ef">'+c.effect+'</div><div class="dl">'+c.delta+'</div>';
+    d.style.animationDelay=(cardSeed++)*90+'ms';
+    row.appendChild(d); return d;
+  });
+  wrap.appendChild(row);
+  els.forEach((d,idx)=>{
+    setTimeout(()=>{
+      const from=d.getBoundingClientRect(), to=$('#buffbar').getBoundingClientRect();
+      const dx=(to.left+30)-from.left, dy=(to.top+8)-from.top;
+      d.animate([{transform:'none',opacity:1},
+                 {transform:'translate('+dx+'px,'+dy+'px) scale(.16)',opacity:0}],
+        {duration:540,easing:'cubic-bezier(.45,0,.75,.2)',fill:'forwards'});
+    }, 950+idx*130);
+  });
+  setTimeout(()=>{ row.remove(); if(wrap && wrap.parentNode && !wrap.children.length) wrap.remove(); }, 2200+cards.length*130);
+}
+
+/* =========================================================================
+   渲染
+   ========================================================================= */
+const boardEl=$('#board'), holesEl=$('#holes'), ballLayer=$('#ballLayer'), floatLayer=$('#floatLayer');
+let holeEls=[]; let curTab='stats';
+
+function buildHoles(){
+  holesEl.innerHTML=''; holeEls=[];
+  for(let i=0;i<CFG.holeCount;i++){
+    const d=document.createElement('div'); d.className='hole'; d.dataset.i=i;
+    d.innerHTML='<span class="no">'+(i+1)+'</span><span class="tag">奖励</span>';
+    d.addEventListener('click',()=>onHoleClick(i));
+    holesEl.appendChild(d); holeEls.push(d);
+  }
+  layoutMech();
+}
+function renderHoles(){
+  const rolling=state.phase==='betting';
+  const prev=rolling?state.preview.holes:state.rewardHoles;
+  for(let i=0;i<CFG.holeCount;i++){
+    const el=holeEls[i]; el.className='hole';
+    if(prev.indexOf(i)>=0){ el.classList.add('reward'); if(rolling) el.classList.add('flash'); }
+    if(!rolling){
+      if(state.specialHoles.indexOf(i)>=0) el.classList.add('special');
+      if(state.target!==null){
+        if(state.target===i) el.classList.add('target');
+        else if(Math.abs(state.target-i)===1) el.classList.add('neighbor');
+      }
+    }
+  }
+}
+function renderCenter(){
+  const cp=$('#centerPanel'), v=$('#cpValue'), sub=$('#cpSub'), calc=$('#cpCalc');
+  cp.className='center-panel';
+  const sp=state.specialHoles.length;
+  if(state.phase==='betting'){
+    cp.classList.add('rolling'); v.className='cp-value rolling';
+    v.innerHTML=state.preview.value+'<small> 颗</small>';
+    sub.innerHTML='奖励孔 <b>'+state.preview.holes.length+'</b> 个 / '+CFG.holeCount+'　<span style="color:var(--dim2)">滚动中…</span>';
+    calc.textContent='投入倍率 ×'+state.roundBet+'　按「确认」停止抽取';
+  }else if(state.phase==='aim'||state.phase==='firing'){
+    cp.classList.add('locked'); v.className='cp-value';
+    v.innerHTML=state.rewardValue+'<small> 颗</small>';
+    sub.innerHTML='奖励孔 <b>'+state.rewardHoles.length+'</b> 个 / '+CFG.holeCount+(sp?'　<span style="color:var(--red)">特殊 '+sp+' 个（×2）</span>':'');
+    const tgtSpecial=state.target!==null&&state.specialHoles.indexOf(state.target)>=0;
+    const base=state.rewardValue*state.roundBet*(tgtSpecial?2:1);
+    calc.innerHTML='命中奖励 '+state.rewardValue+' × 倍率 '+state.roundBet+(tgtSpecial?' × 2（特殊）':'')+
+      ' = <b>'+base+'</b> 颗'+(state.pity.wxtd>0?'　+ 卧薪尝胆 '+state.pity.wxtd:'');
+  }else{
+    v.className='cp-value'; v.innerHTML='--<small> 颗</small>';
+    sub.textContent='奖励孔 -- 个 / '+CFG.holeCount;
+    calc.textContent='投入弹珠后开始抽取';
+  }
+}
+function renderBuffs(){
+  const out=[];
+  if(state.pity.hit) out.push('<span class="buff pity hit">🎯 命中加成 +1（命中后失效）</span>');
+  if(state.pity.luck) out.push('<span class="buff pity luck">🧩 广撒网 +1 幸运（命中后失效）</span>');
+  if(state.pity.fortune) out.push('<span class="buff pity fortune">💰 聚宝盆 +1 财运（命中后失效）</span>');
+  if(state.pity.wxtd>0) out.push('<span class="buff wxtd">🔥 卧薪尝胆 ×'+state.pity.wxtd+'（命中额外 +'+state.pity.wxtd+' 颗）</span>');
+  for(const k of PROMO_KEYS){ const b=state.promo[k],d=PROMO_DEF[k];
+    if(b&&b.rounds>0) out.push('<span class="buff promo '+d.attr+'">'+d.icon+' '+d.name+'（'+ATTR_NAME[d.attr]+' +'+d.val+' · 剩'+b.rounds+'回合）</span>'); }
+  $('#buffbar').innerHTML=out.length?out.join(''):'<span class="none">当前没有生效中的 BUFF（连续未命中会触发激励 BUFF，投币会抽促销 BUFF）</span>';
+}
+function renderRoundBar(){
+  const c=[];
+  c.push('<span class="chip">回合 <b>'+(state.stats.rounds+1)+'</b></span>');
+  const rl=nonzeroRange(luckRow()), rf=nonzeroRange(fortuneRow());
+  c.push('<span class="chip">幸运 '+attr('luck')+' → 奖励孔 '+(rl[0]+1)+'~'+(rl[1]+1)+' 个</span>');
+  c.push('<span class="chip">财运 '+attr('fortune')+' → 奖励 '+(rf[0]+1)+'~'+(rf[1]+1)+' 颗</span>');
+  if(state.phase==='aim'||state.phase==='firing'){
+    const ch=state.target!==null?winChance(state.target):0;
+    c.push('<span class="chip hot">命中率 <b>'+fmtPct(ch)+'</b>（'+state.rewardHoles.length+' 个奖励孔）</span>');
+    if(state.specialHoles.length) c.push('<span class="chip spec">特殊奖励孔 '+state.specialHoles.length+' 个 · 命中 ×2</span>');
+  }
+  $('#roundbar').innerHTML=c.join('');
+}
+function renderHUD(){
+  $('#hudCoins').textContent=fmtNum(state.coins);
+  $('#hudMarbles').textContent=fmtNum(state.marbles);
+  $('#hudHit').textContent=attr('hit');
+  $('#hudLuck').textContent=attr('luck');
+  $('#hudFortune').textContent=attr('fortune');
+  noteAsset();
+  $('#pillPeak').textContent='峰值：'+fmtNum(state.stats.peakAsset);
+  $('#pillPity').textContent='激励：'+state.pity.counter+'/'+state.pity.threshold+(state.pity.wxtd>0?' · 卧薪 '+state.pity.wxtd:'');
+  $('#pillPity').style.color=state.pity.counter>0?'var(--gold)':'';
+
+  const busy=state.phase==='firing';
+  const canBuy=state.phase==='ready'&&state.coins>=CFG.coinPerBuy;
+  const canAdd=(state.phase==='ready'||state.phase==='betting')&&state.marbles>=1;
+  $('#btnBuy').disabled=!canBuy;
+  $('#btnBuy').textContent=state.phase==='ready'?'💰 投币 '+CFG.coinPerBuy+' 币 → '+CFG.marblePerBuy+' 弹珠':'💰 投币（仅回合之间可用）';
+  $('#btnAdd1').disabled=!canAdd||busy;
+  $('#btnAddN').disabled=!canAdd||busy;
+  $('#inpQty').disabled=!canAdd||busy;
+  $('#btnConfirm').disabled=!(state.phase==='betting'&&state.roundBet>=1);
+  $('#btnFire').disabled=!(state.phase==='aim'&&state.target!==null&&!state.busy);
+  $('#btnFire').textContent=(state.phase==='aim'&&state.target===null)?'请选目标孔':'发 射';
+  $('#btnConfirm').classList.toggle('pulse',state.phase==='betting'&&!state.auto);
+  $('#btnAdd1').classList.toggle('pulse',state.phase==='ready'&&state.marbles>=1&&!state.auto);
+  const lv=state.actSkills.alchemy, lvP=profile.skills.alchemy;
+  $('#btnAlchemy').disabled=!(state.phase==='aim'&&lv>=1&&!state.alchemyUsed&&state.target!==null&&!state.busy);
+  $('#btnAlchemy').classList.toggle('pulse',state.phase==='aim'&&lv>=1&&!state.alchemyUsed&&state.target!==null&&!state.busy);
+  $('#alchInfo').textContent = lv<1 ? '未学习' :
+    ('Lv'+lv+' · 非奖励孔→奖励孔 '+fmtPct(ALCH_DOWN[lv])+' / 奖励孔→特殊 '+fmtPct(ALCH_UP[lv])+(state.alchemyUsed?' · 本回合已用':' · 可用')+(lvP!==lv?'（Lv'+lvP+' 下回合生效）':''));
+  $('#betInfo').textContent='已投入 '+state.roundBet+' 颗 · 倍率 ×'+state.roundBet;
+  $('#tgAuto').checked=state.auto; $('#tgAutoWrap').classList.toggle('on',state.auto);
+  $('#tgFast').checked=state.fast; $('#tgFastWrap').classList.toggle('on',state.fast);
+  $('#tgSound').checked=state.sound; $('#tgSoundWrap').classList.toggle('on',state.sound);
+  renderRoundBar(); renderBuffs(); renderCenter();
+
+  if(isBroke()){
+    setHint('💀 钱币与弹珠都耗尽了 · 本局峰值资产 <b>'+fmtNum(state.stats.peakAsset)+'</b>（历史最佳 '+fmtNum(state.stats.bestEver)+'）—— 点「重新开始」再战');
+  }else if(state.phase==='ready'&&state.roundBet===0){
+    setHint('先「投币」补珠（抽 '+CFG.promoDraws+' 个促销 BUFF），再下注：<b>＋投入 1 颗</b> 或批量投入，投完按 <b>确认</b> 开奖');
+  }
+}
+function kpi(k,v,cls){ return '<div class="kpi"><div class="k">'+k+'</div><div class="v '+(cls||'')+'">'+v+'</div></div>'; }
+function refreshPanel(){ if(curTab!=='set') renderPanel(); }
+
+function statsHTML(){
+  const s=state.stats, rate=s.rounds?s.wins/s.rounds:0, net=s.marblesOut-s.marblesIn;
+  const asset=(state.marbles+state.coins*CFG.marblePerBuy)-(state.startMarbles+state.startCoins*CFG.marblePerBuy);
+  return '<h4>核心数据</h4><div class="grid2">'+
+    kpi('总回合',fmtNum(s.rounds),'')+kpi('命中回合',fmtNum(s.wins),'g')+
+    kpi('命中率',(rate*100).toFixed(1)+'%','a')+kpi('当前连续未命中',fmtNum(s.missStreak),'r')+
+    kpi('累计投入弹珠',fmtNum(s.marblesIn),'')+kpi('累计赢取弹珠',fmtNum(s.marblesOut),'g')+
+    kpi('弹珠收支',(net>0?'+':'')+fmtNum(net),net>=0?'g':'r')+
+    kpi('总资产盈亏',(asset>0?'+':'')+fmtNum(asset),asset>=0?'g':'r')+
+    kpi('单次最大奖励',fmtNum(s.bestWin),'a')+kpi('最大回合倍率','×'+fmtNum(s.bestMult),'b')+
+    kpi('当前连胜',fmtNum(s.streak),'b')+kpi('最佳连胜',fmtNum(s.bestStreak),'b')+
+    kpi('本局峰值资产',fmtNum(s.peakAsset),'a')+kpi('历史最佳资产',fmtNum(s.bestEver),'a')+
+    kpi('点石成金发动',fmtNum(s.alchemy),'p')+kpi('特殊孔命中',fmtNum(s.specialHits),'r')+
+  '</div><h4>弹珠走势</h4><canvas class="chart" id="curve"></canvas>'+
+  '<h4>消费明细</h4><div class="grid2">'+
+    kpi('花费钱币',fmtNum(s.coinsSpent),'a')+kpi('投币次数',fmtNum(s.buys),'')+
+    kpi('剩余钱币',fmtNum(state.coins),'a')+kpi('幸运/财运上限',fmtNum(ATTR_CAP),'')+
+  '</div>';
+}
+function buffHTML(){
+  const h=[]; const parts=n=>attrParts(n);
+  h.push('<h4>属性来源明细</h4><div class="help">');
+  for(const k of ['hit','luck','fortune']){
+    const p=parts(k);
+    h.push('<div class="li"><i>'+ATTR_NAME[k].slice(0,1)+'</i><div><b>'+ATTR_NAME[k]+' '+attr(k)+'</b> = 激励 '+p.pity+' + 促销 '+p.promo+' + 成就 '+p.acv+' + 技能 '+p.skill+' + 皮肤 '+p.skin+'</div></div>');
+  }
+  h.push('</div>');
+  h.push('<h4>激励 BUFF（连续未命中触发 · 命中一次后消失）</h4><div class="help">'+
+    '<div class="li"><i>🎯</i><div><b>命中加成</b> +1 —— '+(state.pity.hit?'<span style="color:var(--green)">生效中</span>':'未获得')+'</div></div>'+
+    '<div class="li"><i>🧩</i><div><b>广撒网</b> +1 幸运 —— '+(state.pity.luck?'<span style="color:var(--green)">生效中</span>':'未获得')+'</div></div>'+
+    '<div class="li"><i>💰</i><div><b>聚宝盆</b> +1 财运 —— '+(state.pity.fortune?'<span style="color:var(--green)">生效中</span>':'未获得')+'</div></div>'+
+    '<div class="li"><i>🔥</i><div><b>卧薪尝胆</b> 当前 <b>'+state.pity.wxtd+'</b> 层（命中额外 +层数 颗）</div></div></div>');
+  h.push('<h4>促销 BUFF（每次投币抽 '+CFG.promoDraws+' 次 · 只延时 · 上限 '+PROMO_DUR_CAP+' 回合）</h4><div class="grid2">');
+  for(const k of PROMO_KEYS){ const d=PROMO_DEF[k], b=state.promo[k]||{rounds:0};
+    h.push(kpi(d.icon+' '+d.name, ATTR_NAME[d.attr]+' +'+d.val+'（剩'+b.rounds+'）', b.rounds>0?'g':'')); }
+  h.push('</div><h4>皮肤加成</h4><div class="help"><div class="li"><i>🎨</i><div>'+SKINS[profile.equip].icon+' '+SKINS[profile.equip].name+
+    '：拥有 '+profile.skins[profile.equip]+' 个 → '+(SKINS[profile.equip].attr?ATTR_NAME[SKINS[profile.equip].attr]+' +'+skinBonus(SKINS[profile.equip].attr):'无加成')+'</div></div></div>');
+  return h.join('');
+}
+function skillHTML(){
+  const h=['<h4>被动技能（消耗弹珠加点 · <span style="color:var(--gold2)">下回合生效</span>）</h4>'];
+  for(const k of ['hit','luck','fortune']){
+    const s=SKILLS[k], lv=profile.skills[k], act=state.actSkills[k], cost=s.cost(lv);
+    h.push('<div class="skill"><div class="ico">'+s.icon+'</div><div class="info">'+
+      '<div class="nm">'+s.name+' <span style="color:var(--dim2);font-size:11px">Lv '+lv+' / '+s.max+'</span>'+
+      (act!==lv?' <span class="pending">生效中 Lv'+act+'</span>':'')+'</div>'+
+      '<div class="ds">'+s.desc+'</div>'+
+      '<div class="pips">'+[0,1,2,3,4].map(i=>'<div class="pip'+(i<lv?' on':'')+'"></div>').join('')+'</div>'+
+      '</div><button class="btn sm" data-skill="'+k+'" '+(lv>=s.max||state.marbles<cost?'disabled':'')+'>'+
+      (lv>=s.max?'已满级':'升级 · '+cost+' 珠')+'</button></div>');
+  }
+  const sa=SKILLS.alchemy, la=profile.skills.alchemy, acta=state.actSkills.alchemy, ca=sa.cost(la);
+  h.push('<h4>特殊技能</h4>');
+  h.push('<div class="skill"><div class="ico">🪄</div><div class="info">'+
+    '<div class="nm">点石成金 <span style="color:var(--dim2);font-size:11px">Lv '+la+' / '+sa.max+'</span>'+
+    (acta!==la?' <span class="pending">生效中 Lv'+acta+'</span>':'')+'</div>'+
+    '<div class="ds">「确认」后、发射前可点一个孔改造：非奖励孔 → 奖励孔（'+(acta>=1?fmtPct(ALCH_DOWN[acta]):'—')+'）；'+
+    '奖励孔 → <span style="color:var(--red)">特殊奖励孔</span>（'+(acta>=1?fmtPct(ALCH_UP[acta]):'—')+'，命中后奖励 ×2）。'+
+    (acta>=5?'<br><b style="color:var(--red)">Lv5 额外：</b>每回合自动对随机孔再发动一次 5 级点石成金。':'')+'</div>'+
+    '<div class="pips">'+[0,1,2,3,4].map(i=>'<div class="pip'+(i<la?' on':'')+'"></div>').join('')+'</div>'+
+    '</div><button class="btn sm magic" data-skill="alchemy" '+(la>=sa.max||state.marbles<ca?'disabled':'')+'>'+
+    (la>=sa.max?'已满级':'升级 · '+ca+' 珠')+'</button></div>');
+  h.push('<div class="help">当前弹珠：<b>'+fmtNum(state.marbles)+'</b> 颗。技能加点立即扣珠，但属性在本回合结束后才开始生效。</div>');
+  setTimeout(bindSkillBtns,0);
+  return h.join('');
+}
+function bindSkillBtns(){
+  $$('#panelBody [data-skill]').forEach(b=>b.onclick=()=>upgradeSkill(b.dataset.skill));
+}
+function upgradeSkill(k){
+  const s=SKILLS[k]; const lv=profile.skills[k];
+  if(lv>=s.max){ toast('已满级','bad'); return; }
+  const cost=s.cost(lv);
+  if(state.marbles<cost){ toast('弹珠不足，需要 '+cost+' 颗','bad'); SFX.miss(); return; }
+  state.marbles-=cost; profile.skills[k]=lv+1;
+  SFX.buff(); toast(s.name+' 升至 Lv'+(lv+1)+'（下回合生效）','good');
+  pushLog('buff','技能加点：'+s.name+' Lv'+(lv+1)+'（下回合生效）','-'+cost+'珠');
+  renderHUD(); renderPanel(); save();
+}
+function acvHTML(){
+  const unlocked=ACHIEVEMENTS.filter(a=>profile.acv[a.id]&&profile.acv[a.id].u).length;
+  const ready=ACHIEVEMENTS.filter(a=>{const s=profile.acv[a.id]; return s&&s.u&&!s.c;}).length;
+  const h=['<h4>成就进度 '+unlocked+' / '+ACHIEVEMENTS.length+'（可领取 '+ready+'）</h4>'];
+  h.push('<div class="grid2">'+
+    kpi('成就给予属性','命中+'+profile.acvAttr.hit+' / 幸运+'+profile.acvAttr.luck+' / 财运+'+profile.acvAttr.fortune,'a')+
+    kpi('待领取',ready,ready?'a':'')+
+    kpi('累计抽奖次数',fmtNum(profile.drawn),'b')+
+    kpi('可用抽奖券',fmtNum(profile.draws),profile.draws?'g':'')+
+  '</div>');
+  h.push('<div class="help" style="margin-top:8px">每解锁 1 个成就获得 1 次抽奖机会；成就奖励需要手动领取。鼠标悬停图标可查看条件与奖励。</div>');
+  h.push('<h4>成就列表</h4><div class="grid2" id="acvGrid">');
+  for(const a of ACHIEVEMENTS){
+    const s=profile.acv[a.id]||{u:false,c:false};
+    const r=RARITY[a.r];
+    const cls='acv '+(s.u?r.cls:'locked')+((s.u&&!s.c)?' ready':'');
+    h.push('<div class="'+cls+'" data-acv="'+a.id+'"><div class="in">'+
+      '<div class="ttl"><span class="ic">'+a.icon+'</span>'+a.n+'</div>'+
+      '<div class="st">'+r.n+'</div>'+
+      (s.u?(s.c?'<div class="done">已领取</div>':'<button class="claim" data-claim="'+a.id+'">领取奖励</button>'):'<div class="done">未解锁</div>')+
+      '</div></div>');
+  }
+  h.push('</div>');
+  h.push('<div class="acvinfo" id="acvInfo">🖱 把鼠标移到任意成就上（或点一下卡片），这里会显示它的解锁条件与奖励。</div>');
+  setTimeout(bindAcvBtns,0);
+  return h.join('');
+}
+function acvInfoHTML(a){
+  const s=profile.acv[a.id]||{u:false,c:false};
+  return '<b>'+a.icon+' '+a.n+' · '+RARITY[a.r].n+'</b>'+
+    '解锁条件：'+a.d+'<br>奖励：<span class="rw">'+rewardText(a.rw)+'</span>'+
+    '　状态：'+(s.u?(s.c?'已领取':'<span class="st">可领取</span>'):'未解锁');
+}
+function rewardText(rw){
+  const p=[];
+  if(rw.coins) p.push('+'+rw.coins+' 币');
+  if(rw.attr){ for(const k in rw.attr) p.push(ATTR_NAME[k]+' +'+rw.attr[k]); }
+  return p.join('，')||'无';
+}
+function bindAcvBtns(){
+  $$('#panelBody [data-claim]').forEach(b=>b.onclick=e=>{ e.stopPropagation(); claimAcv(b.dataset.claim); });
+  const info=$('#acvInfo');
+  $$('#acvGrid .acv').forEach(el=>{
+    const show=()=>{ const a=ACHIEVEMENTS.find(x=>x.id===el.dataset.acv); if(a&&info) info.innerHTML=acvInfoHTML(a); };
+    el.onmouseenter=show;
+    el.onclick=show;
+  });
+}
+function claimAcv(id){
+  const a=ACHIEVEMENTS.find(x=>x.id===id); const s=profile.acv[id];
+  if(!a||!s||!s.u||s.c) return;
+  s.c=true;
+  if(a.rw.coins) state.coins+=a.rw.coins;
+  if(a.rw.attr) for(const k in a.rw.attr) profile.acvAttr[k]=(profile.acvAttr[k]||0)+a.rw.attr[k];
+  SFX.acv();
+  pushLog('acv','领取成就「'+a.n+'」奖励：'+rewardText(a.rw),'🏆');
+  toast('已领取：'+a.n+' · '+rewardText(a.rw),'acv');
+  renderHUD(); renderPanel(); save();
+}
+function checkAcv(){
+  let newly=0;
+  for(const a of ACHIEVEMENTS){
+    const s=profile.acv[a.id]||(profile.acv[a.id]={u:false,c:false});
+    if(!s.u && a.c(profile.life)){ s.u=true; newly++; profile.draws++; SFX.acv();
+      toast('🏆 成就解锁：'+a.n+'（+1 抽奖券）','acv');
+      pushLog('acv','成就解锁「'+a.n+'」（'+RARITY[a.r].n+'）· '+a.d+' → 获得 1 次抽奖','🏆'); }
+  }
+  if(newly){ renderHUD(); if(curTab==='acv') renderPanel(); save(); }
+  return newly;
+}
+/* ------------------------------ 皮肤 / 抽奖 ------------------------------ */
+function skinHTML(){
+  const h=['<h4>皮肤（直接兑换 · 效果随拥有数量提升，但有上限）</h4>'];
+  for(const k of SKIN_KEYS){
+    const s=SKINS[k], own=profile.skins[k]||0, on=profile.equip===k;
+    h.push('<div class="skin'+(on?' on':'')+'"><div class="ballprev ball" data-skin="'+k+'" style="position:static;width:34px;height:34px"></div>'+
+      '<div class="info"><div class="nm">'+s.icon+' '+s.name+'（拥有 '+own+'）'+(on?' <span style="color:var(--gold)">已装备</span>':'')+'</div>'+
+      '<div class="ds">'+s.desc+(s.attr?' · 当前生效 +'+skinBonus(s.attr):'')+'</div></div>'+
+      '<div style="display:flex;flex-direction:column;gap:5px">'+
+      (k!=='normal'?'<button class="btn sm" data-buy="'+k+'" '+(state.coins<CFG.skinCost?'disabled':'')+'>兑换 '+CFG.skinCost+' 币</button>':'')+
+      (on?'<button class="btn sm" disabled>使用中</button>':'<button class="btn sm" data-equip="'+k+'" '+(own<1?'disabled':'')+'>装备</button>')+
+      '</div></div>');
+  }
+  h.push('<h4>抽奖转盘</h4>');
+  h.push('<div class="wheelbox"><div class="pointer"></div><canvas id="wheel" width="250" height="250"></canvas></div>');
+  h.push('<div class="help" style="text-align:center">奖池：元宝球 / 四叶草球 / 标靶球（各 1）· 3 个弹珠（5）· 1 个币（1）· 谢谢惠顾（1）</div>');
+  h.push('<div class="row" style="justify-content:center;margin-top:8px">'+
+    '<span class="pill" id="drawCount">抽奖券：'+profile.draws+'</span>'+
+    '<button class="btn primary" id="btnDraw" '+(profile.draws<1?'disabled':'')+'>🎡 抽 一 次</button>'+
+    '<button class="btn" id="btnDrawAll" '+(profile.draws<2?'disabled':'')+'>⚡ 一键抽完（'+profile.draws+'）</button></div>');
+  h.push(drawResultsHTML());
+  setTimeout(()=>{ bindSkinBtns(); drawWheel(wheelRot); },0);
+  return h.join('');
+}
+function bindSkinBtns(){
+  $$('#panelBody [data-equip]').forEach(b=>b.onclick=()=>{ profile.equip=b.dataset.equip; SFX.click(); toast('已装备 '+SKINS[profile.equip].name,'good'); renderHUD(); renderPanel(); save(); });
+  $$('#panelBody [data-buy]').forEach(b=>b.onclick=()=>{
+    const k=b.dataset.buy, s=SKINS[k], cost=CFG.skinCost;
+    if(state.coins<cost){ toast('钱币不足','bad'); return; }
+    state.coins-=cost; profile.skins[k]=(profile.skins[k]||0)+1; SFX.coin();
+    pushLog('buy','兑换皮肤 '+s.name+'（拥有 '+profile.skins[k]+'）','-'+cost+'币');
+    toast('兑换成功：'+s.name,'good'); renderHUD(); renderPanel(); save();
+  });
+  const d=$('#btnDraw'); if(d) d.onclick=startDraw;
+  const da=$('#btnDrawAll'); if(da) da.onclick=drawAll;
+}
+let wheelRot=0, drawing=false, drawResults=[];
+function drawWheel(rot){
+  const cv=$('#wheel'); if(!cv) return;
+  const g=cv.getContext('2d'), R=125, total=LOTTERY.reduce((a,x)=>a+x.w,0);
+  g.clearRect(0,0,250,250);
+  let ang=-Math.PI/2 + rot*Math.PI/180;
+  LOTTERY.forEach(it=>{
+    const sweep=it.w/total*Math.PI*2;
+    g.beginPath(); g.moveTo(R,R); g.arc(R,R,R-8,ang,ang+sweep); g.closePath();
+    g.fillStyle=it.color; g.globalAlpha=.85; g.fill(); g.globalAlpha=1;
+    g.strokeStyle='rgba(0,0,0,.35)'; g.lineWidth=1.5; g.stroke();
+    g.save(); g.translate(R,R); g.rotate(ang+sweep/2);
+    g.fillStyle='rgba(10,12,20,.92)'; g.font='bold 12px sans-serif';
+    g.textAlign='right'; g.textBaseline='middle';
+    g.fillText(it.label, R-18, 0);
+    g.restore();
+    ang+=sweep;
+  });
+  g.beginPath(); g.arc(R,R,16,0,Math.PI*2); g.fillStyle='#0d1018'; g.fill();
+  g.strokeStyle='rgba(255,255,255,.25)'; g.stroke();
+}
+function labelOf(w){
+  return w.id==='marbles3' ? '3 个弹珠' : w.id==='coin1' ? '1 个币' : w.id==='none' ? '谢谢惠顾' : SKINS[w.id].name;
+}
+function spinTo(winner, dur, cb){
+  const total=LOTTERY.reduce((a,x)=>a+x.w,0);
+  let acc=0, mid=0;
+  for(const it of LOTTERY){ const sweep=it.w/total*360; if(it.id===winner.id){ mid=acc+sweep/2; break; } acc+=sweep; }
+  const target=360*5+(360-mid);
+  const from=wheelRot%360, t0=performance.now();
+  drawing=true;
+  const step=now=>{
+    const t=Math.min(1,(now-t0)/dur), e=1-Math.pow(1-t,3);
+    wheelRot=from+target*e; drawWheel(wheelRot);
+    if(t<1) requestAnimationFrame(step);
+    else{ wheelRot=target%360; drawing=false; cb&&cb(); }
+  };
+  requestAnimationFrame(step);
+}
+function disableDrawBtns(){
+  const b=$('#btnDraw'); if(b) b.disabled=true;
+  const b2=$('#btnDrawAll'); if(b2){ b2.disabled=true; b2.textContent='⚡ 一键抽完（'+profile.draws+'）'; }
+  const c=$('#drawCount'); if(c) c.textContent='抽奖券：'+profile.draws;
+}
+function startDraw(){
+  if(drawing||profile.draws<1) return;
+  profile.draws--; profile.drawn++;
+  const w=weightedPick(LOTTERY);
+  drawResults=[labelOf(w)];
+  disableDrawBtns(); updateDrawResults();
+  spinTo(w,3200,()=>{ applyLottery(w,false); renderHUD(); if(curTab==='skin') renderPanel(); save(); });
+}
+/* 一键抽完：一次性消耗所有抽奖券，转盘停在最后一次结果，并列出全部战果 */
+function drawAll(){
+  if(drawing||profile.draws<1) return;
+  const n=profile.draws, items=[];
+  for(let i=0;i<n;i++){ const w=weightedPick(LOTTERY); items.push(w); profile.drawn++; applyLottery(w,true); }
+  profile.draws=0;
+  drawResults=items.map(labelOf);
+  disableDrawBtns(); updateDrawResults();
+  SFX.acv(); toast('一键抽完：共 '+n+' 次','good');
+  spinTo(items[items.length-1], 2200, ()=>{ renderHUD(); if(curTab==='skin') renderPanel(); save(); });
+}
+function drawResultsHTML(){
+  if(!drawResults.length) return '';
+  const cnt={}; drawResults.forEach(x=>cnt[x]=(cnt[x]||0)+1);
+  const rows=Object.keys(cnt).sort((a,b)=>cnt[b]-cnt[a])
+    .map(k=>'<div class="drawrow"><span>'+k+'</span><span class="a">×'+cnt[k]+'</span></div>').join('');
+  return '<h4>本次抽奖结果（共 '+drawResults.length+' 次）</h4><div class="drawlist">'+rows+'</div>';
+}
+/* 转盘旋转期间不整体重绘面板（会打断画布动画），只把结果与券数直接写进 DOM */
+function updateDrawResults(){
+  const old=$('#drawResultBox'); if(old) old.remove();
+  if(curTab!=='skin'||!drawResults.length) return;
+  const body=$('#panelBody'); if(!body) return;
+  const box=document.createElement('div'); box.id='drawResultBox'; box.innerHTML=drawResultsHTML();
+  body.appendChild(box);
+}
+function applyLottery(w, silent){
+  if(w.id==='marbles3'){ state.marbles+=3; gotMarbles(3); }
+  else if(w.id==='coin1'){ state.coins+=1; }
+  else if(w.id==='none'){ }
+  else { profile.skins[w.id]=(profile.skins[w.id]||0)+1; }
+  pushLog('draw','转盘抽奖 → '+labelOf(w), w.id==='none'?'—':'🎁');
+  if(!silent){ SFX.acv(); toast('🎡 抽到：'+labelOf(w), w.id==='none'?'bad':'good'); }
+}
+function logHTML(){
+  if(!state.log.length) return '<h4>对局记录</h4><div class="help">暂无记录，去投几颗弹珠吧。</div>';
+  return '<h4>对局记录（最近 '+state.log.length+' 条）</h4><div class="log">'+
+    state.log.map(r=>'<div class="logrow '+(r.t||'')+'"><span class="n">#'+r.no+'</span><span class="txt">'+r.txt+'</span><span class="amt">'+r.amt+'</span></div>').join('')+'</div>';
+}
+function weightTablesHTML(){
+  const lr=attr('luck'), fr=attr('fortune');
+  let t1='<div style="font-size:11.5px;color:var(--dim);margin:6px 0 4px">幸运 → 奖励孔个数权重（列 = 1~12 个孔）</div><table class="wt"><tr><th>幸</th>';
+  for(let i=1;i<=12;i++) t1+='<th>'+i+'</th>'; t1+='</tr>';
+  for(let r=0;r<=ATTR_CAP;r++){ t1+='<tr class="'+(r===lr?'now':'')+'"><th>'+r+'</th>';
+    for(let c=0;c<12;c++) t1+='<td>'+LUCK_TABLE[r][c]+'</td>'; t1+='</tr>'; }
+  t1+='</table>';
+  let t2='<div style="font-size:11.5px;color:var(--dim);margin:12px 0 4px">财运 → 命中奖励权重（列 = 1~15 颗）</div><table class="wt"><tr><th>财</th>';
+  for(let i=1;i<=15;i++) t2+='<th>'+i+'</th>'; t2+='</tr>';
+  for(let r=0;r<=ATTR_CAP;r++){ t2+='<tr class="'+(r===fr?'now':'')+'"><th>'+r+'</th>';
+    for(let c=0;c<15;c++) t2+='<td>'+FORTUNE_TABLE[r][c]+'</td>'; t2+='</tr>'; }
+  t2+='</table>';
+  return t1+t2;
+}
+function helpHTML(){
+  return '<h4>规则速览</h4><div class="help">'+
+  '<div class="li"><i>1</i><div><b>回合</b>：投入弹珠 → 确认开奖 → 发射完 = 1 回合。'+CFG.coinPerBuy+' 币 = '+CFG.marblePerBuy+' 珠，<b>只能在回合之间投币</b>。</div></div>'+
+  '<div class="li"><i>2</i><div><b>倍率</b>：本回合累计投入几颗就是几倍（投 3 颗再投 1 颗 = 4 颗 → ×4）。</div></div>'+
+  '<div class="li"><i>3</i><div><b>确认前滚动、确认时开奖</b>：下注期间机器滚动预览；按「确认」才真正抽取奖励孔（按幸运表抽数量）+ 统一命中奖励（按财运表抽数字）。</div></div>'+
+  '<div class="li"><i>4</i><div><b>发射机构</b>：确认后隔板打开 → 弹珠从斜坡准备区流入发射槽 → 隔板关闭 → 击打装置把弹珠打上去 → 越过 12 个孔上方后落入实际命中孔 → 掉回斜坡准备区。</div></div>'+
+  '<div class="li"><i>5</i><div><b>命中判定</b>：12 孔默认各 1 权重；选中目标孔 +（命中属性），左右邻孔各 +1，再按权重随机落点。<b>落在任意奖励孔即中奖</b>。</div></div>'+
+  '<div class="li"><i>6</i><div><b>奖励</b>：命中奖励 × 本轮倍率 + 额外奖励（卧薪尝胆等）；命中<span style="color:var(--red)">特殊奖励孔</span>再 ×2。</div></div>'+
+  '<div class="li"><i>7</i><div><b>三属性</b>：命中 / 幸运 / 财运，来源 = 激励 BUFF + 促销 BUFF + 成就奖励 + 技能加点 + 皮肤。幸运与财运的生效上限为 '+ATTR_CAP+'，<b>命中不设上限</b>。</div></div>'+
+  '<div class="li"><i>8</i><div><b>技能</b>：命中/幸运/财运三系，Lv0→5 分别消耗 100/200/300/400/500 弹珠，每级 +1 对应属性；<b>加点下回合生效</b>。特殊技能<b>点石成金</b>升级消耗 250/500/750/1000/1500 弹珠。</div></div>'+
+  '<div class="li"><i>9</i><div><b>点石成金</b>：确认后发射前，选中一个孔按技能等级改造：非奖励孔→奖励孔（12.5/25/40/60/75%）；奖励孔→特殊奖励孔（15/25/35/45/65%，命中后 ×2）。Lv5 每回合额外对随机孔自动发动一次。</div></div>'+
+  '<div class="li"><i>10</i><div><b>成就</b>：'+ACHIEVEMENTS.length+' 个，按稀有度描边；解锁后获得 1 次抽奖券，奖励需手动领取（币 / 属性点）。</div></div>'+
+  '<div class="li"><i>11</i><div><b>皮肤与抽奖</b>：皮肤可兑换或抽到，效果随拥有数量提升（上限 +3）；转盘奖池权重：三种球各 1、3 个弹珠 5、1 个币 1、谢谢惠顾 1。</div></div>'+
+  '</div><h4>当前权重表（高亮行 = 你当前生效的幸运/财运）</h4>'+weightTablesHTML();
+}
+function drawCurve(){
+  const c=$('#curve'); if(!c) return;
+  const dpr=window.devicePixelRatio||1, w=c.clientWidth||320, h=c.clientHeight||96;
+  c.width=w*dpr; c.height=h*dpr;
+  const g=c.getContext('2d'); g.scale(dpr,dpr); g.clearRect(0,0,w,h);
+  const data=state.curve.length?state.curve:[state.startMarbles,state.marbles];
+  const mn=Math.min.apply(null,data), mx=Math.max.apply(null,data), span=Math.max(1,mx-mn);
+  const px=i=>8+(w-16)*(data.length<=1?0.5:i/(data.length-1));
+  const py=v=>h-10-(h-24)*((v-mn)/span);
+  g.strokeStyle='rgba(128,140,170,.25)'; g.lineWidth=1;
+  for(let k=0;k<=3;k++){ const y=8+(h-20)*k/3; g.beginPath(); g.moveTo(6,y); g.lineTo(w-6,y); g.stroke(); }
+  const grad=g.createLinearGradient(0,0,0,h);
+  grad.addColorStop(0,'rgba(255,207,92,.35)'); grad.addColorStop(1,'rgba(255,207,92,0)');
+  g.beginPath(); g.moveTo(px(0),h-6); data.forEach((v,i)=>g.lineTo(px(i),py(v))); g.lineTo(px(data.length-1),h-6);
+  g.closePath(); g.fillStyle=grad; g.fill();
+  g.beginPath(); data.forEach((v,i)=>{ i?g.lineTo(px(i),py(v)):g.moveTo(px(i),py(v)); });
+  g.strokeStyle='#ffcf5c'; g.lineWidth=2; g.lineJoin='round'; g.stroke();
+  g.beginPath(); g.arc(px(data.length-1),py(data[data.length-1]),3.4,0,Math.PI*2); g.fillStyle='#fff3cf'; g.fill();
+  g.fillStyle='#8d97b1'; g.font='10px system-ui'; g.fillText('高 '+mx,8,12); g.fillText('低 '+mn,8,h-3);
+}
+const SETSPEC=[
+  {k:'startCoins',t:'初始钱币',min:1,max:200,step:1,f:v=>v+' 币'},
+  {k:'startMarbles',t:'初始弹珠',min:5,max:500,step:5,f:v=>v+' 颗'},
+  {k:'coinPerBuy',t:'投币花费',min:1,max:20,step:1,f:v=>v+' 币'},
+  {k:'marblePerBuy',t:'每次投币得弹珠',min:1,max:200,step:1,f:v=>v+' 颗'},
+  {k:'promoDraws',t:'投币抽促销BUFF次数',min:1,max:10,step:1,f:v=>v+' 次'},
+  {k:'rollMs',t:'滚动刷新间隔',min:40,max:400,step:10,f:v=>v+' ms'},
+  {k:'pityMin',t:'激励触发回合下限',min:1,max:20,step:1,f:v=>v+' 回合'},
+  {k:'pityMax',t:'激励触发回合上限',min:1,max:30,step:1,f:v=>v+' 回合'},
+  {k:'wxtdBonus',t:'独占卧薪额外层数',min:0,max:5,step:1,f:v=>'+'+v+' 层'},
+  {k:'skinCost',t:'皮肤兑换价',min:1,max:99,step:1,f:v=>v+' 币'},
+  {k:'animSpeed',t:'发射动画速度',min:0.5,max:3,step:0.25,f:v=>v+'×'}
+];
+function setHTML(){
+  return '<h4>外观主题</h4><div class="grid2" style="margin-bottom:6px">'+
+    THEMES.map(t=>'<button class="btn sm'+(profile.theme===t.id?' primary':'')+'" data-theme="'+t.id+'">'+t.icon+' '+t.name+'</button>').join('')+
+    '</div><h4>机器参数</h4><div class="help" style="margin-bottom:6px">改完立即生效（进行中的回合不受影响）。</div>'+
+    SETSPEC.map(s=>'<div class="setrow" data-k="'+s.k+'"><div class="top"><span class="k">'+s.t+'</span><span class="v">'+s.f(CFG[s.k])+'</span></div>'+
+      '<input type="range" min="'+s.min+'" max="'+s.max+'" step="'+s.step+'" value="'+CFG[s.k]+'" /></div>').join('')+
+    '<h4>数据</h4><div class="row"><button class="btn sm" id="btnDefaults">恢复默认参数</button>'+
+    '<button class="btn sm danger" id="btnWipe">清空全部存档（含技能/成就/皮肤）</button></div>';
+}
+function bindSettings(){
+  $$('#panelBody [data-theme]').forEach(b=>b.onclick=()=>{ applyTheme(b.dataset.theme); renderPanel(); save(); });
+  $$('#panelBody .setrow').forEach(row=>{
+    const k=row.dataset.k, spec=SETSPEC.find(s=>s.k===k);
+    const input=row.querySelector('input'), out=row.querySelector('.v');
+    input.addEventListener('input',()=>{
+      const v=parseFloat(input.value); CFG[k]=v; out.textContent=spec.f(v);
+      if(k==='pityMax'&&CFG.pityMin>v) CFG.pityMin=v;
+      if(k==='pityMin'&&CFG.pityMax<v) CFG.pityMax=v;
+      renderHUD(); save();
+    });
+  });
+  $('#btnDefaults').onclick=()=>{ CFG=Object.assign({},DEFAULTS); toast('已恢复默认参数','good'); renderPanel(); renderHUD(); save(); };
+  $('#btnWipe').onclick=()=>{ if(confirm('清空全部存档（技能/成就/皮肤/进度）？')) wipeAll(); };
+}
+function renderPanel(){
+  const body=$('#panelBody');
+  if(curTab==='stats') body.innerHTML=statsHTML();
+  else if(curTab==='buff') body.innerHTML=buffHTML();
+  else if(curTab==='skill') body.innerHTML=skillHTML();
+  else if(curTab==='acv') body.innerHTML=acvHTML();
+  else if(curTab==='skin') body.innerHTML=skinHTML();
+  else if(curTab==='log') body.innerHTML=logHTML();
+  else if(curTab==='set') body.innerHTML=setHTML();
+  else body.innerHTML=helpHTML();
+  if(curTab==='stats') drawCurve();
+  if(curTab==='set') bindSettings();
+}
+
+/* =========================================================================
+   回合流程
+   ========================================================================= */
+function noteAsset(){
+  const v=state.marbles+state.coins*CFG.marblePerBuy, s=state.stats;
+  if(typeof s.peakAsset!=='number') s.peakAsset=0;
+  if(typeof s.bestEver!=='number') s.bestEver=0;
+  if(v>s.peakAsset) s.peakAsset=v;
+  if(v>s.bestEver) s.bestEver=v;
+}
+function isBroke(){ return state.marbles<1 && state.coins<CFG.coinPerBuy; }
+/* 终身统计：累计获得弹珠 / 弹珠峰值（用于新成就） */
+function noteMarbles(){ profile.life.peakMarbles=Math.max(profile.life.peakMarbles||0, state.marbles); }
+function gotMarbles(n){ profile.life.marblesGot=(profile.life.marblesGot||0)+Math.max(0,n); noteMarbles(); }
+function buyCoin(){
+  if(state.phase!=='ready'){ toast('下注开始后不能投币，请等本回合结束','bad'); return; }
+  if(state.coins<CFG.coinPerBuy){ toast('钱币不足','bad'); SFX.miss(); return; }
+  state.coins-=CFG.coinPerBuy; state.marbles+=CFG.marblePerBuy;
+  state.stats.coinsSpent+=CFG.coinPerBuy; state.stats.buys++;
+  profile.life.coinsSpent+=CFG.coinPerBuy; profile.life.buys++;
+  gotMarbles(CFG.marblePerBuy);
+  SFX.coin();
+  const got=[], cards=[];
+  for(let i=0;i<CFG.promoDraws;i++){ const g=grantPromo(); got.push(g.text); cards.push(g); }
+  pushLog('buy','投币 '+CFG.coinPerBuy+' 币 → +'+CFG.marblePerBuy+' 弹珠 · 促销：'+got.join(' + '),'-'+CFG.coinPerBuy+'币');
+  say('投币成功！促销 BUFF：'+got.join('、')+'。');
+  showBuffCards(cards);
+  checkAcv(); renderHUD(); refreshPanel(); save();
+}
+function grantPromo(){
+  const k=pick(PROMO_KEYS), d=PROMO_DEF[k];
+  if(!state.promo[k]) state.promo[k]={lv:0,rounds:0};
+  const b=state.promo[k], add=randInt(d.dmin,d.dmax), was=b.rounds>0;
+  b.lv=1; b.rounds=Math.min(PROMO_DUR_CAP,b.rounds+add);
+  state.stats.promoGained++; SFX.buff();
+  return { icon:d.icon, name:d.name, pity:false,
+    effect:ATTR_NAME[d.attr]+' +'+d.val+' · 持续 '+b.rounds+' 回合',
+    delta:(was?'+'+add+' 回合（续时）':'+'+add+' 回合'),
+    text:d.name+(was?'（续时 → 共 '+b.rounds+' 回合）':'（+'+add+' 回合）') };
+}
+function addMarbles(n){
+  if(state.phase!=='ready'&&state.phase!=='betting') return false;
+  n=Math.max(1,Math.floor(n||1)); if(state.marbles<n) n=state.marbles;
+  if(n<1){ toast('弹珠不足，先投币','bad'); return false; }
+  state.marbles-=n; state.roundBet+=n;
+  state.stats.marblesIn+=n; profile.life.marblesIn+=n;
+  profile.life.bestBet=Math.max(profile.life.bestBet||0, state.roundBet);
+  if(state.phase==='ready'){ state.phase='betting'; startRoll(); }
+  SFX.click(); checkAcv(); renderHUD(); save(); return true;
+}
+function startRoll(){
+  stopRoll();
+  state.preview={holes:pickRewardHoles(drawHoleCount()), value:drawRewardValue()};
+  rollTimer=setInterval(()=>{
+    if(state.phase!=='betting') return;
+    state.preview={holes:pickRewardHoles(drawHoleCount()), value:drawRewardValue()};
+    if(!state.fast) SFX.tick();
+    renderHoles(); renderCenter();
+  }, state.fast?Math.max(50,CFG.rollMs-40):CFG.rollMs);
+  renderHoles(); renderCenter();
+}
+function stopRoll(){ if(rollTimer){ clearInterval(rollTimer); rollTimer=null; } }
+async function confirmBet(){
+  if(state.phase!=='betting') return;
+  stopRoll();
+  state.rewardHoles=pickRewardHoles(drawHoleCount());
+  state.specialHoles=[];
+  state.rewardValue=drawRewardValue();
+  state.target=null; state.alchemyUsed=false; state.phase='aim';
+  SFX.confirm();
+  // Lv5：每回合自动对随机孔再发动一次（带光效）
+  if(state.actSkills.alchemy>=5){
+    const i=randInt(0,CFG.holeCount-1);
+    if(state.specialHoles.indexOf(i)<0){
+      const wasReward=state.rewardHoles.indexOf(i)>=0;
+      state.busy=true; renderHUD();
+      const done=applyAlchemy(i,5,true); state.stats.alchemy++;
+      toast('点石成金 Lv5 自动发动 → '+(i+1)+' 号孔', done?'good':'bad');
+      pushLog('buff','点石成金 Lv5 自动发动 → '+(i+1)+' 号孔：'+(done?(wasReward?'变为特殊奖励孔':'变成奖励孔'):'改造失败'),'🪄');
+      renderHoles(); renderCenter();
+      await alchemyFx(i,done,wasReward?'special':'reward');
+      state.busy=false;
+    }
+  }
+  say('开奖：奖励孔 '+state.rewardHoles.length+' 个，命中奖励 '+state.rewardValue+' 颗（倍率 ×'+state.roundBet+'）。');
+  setHint('已开奖：<b>'+state.rewardHoles.length+'</b> 个奖励孔 · 命中奖励 <b>'+state.rewardValue+'</b> 颗 × 倍率 <b>'+state.roundBet+
+    '</b> —— 点一个孔瞄准'+(state.actSkills.alchemy>=1&&!state.alchemyUsed?'，可用「点石成金」改造该孔':'')+'，然后按「发射」');
+  renderHoles(); renderCenter(); renderHUD(); save();
+  if(state.auto) setTimeout(()=>{
+    if(state.auto&&state.phase==='aim'){
+      state.target=bestTarget(); renderHoles(); renderHUD();
+      setTimeout(()=>{ if(state.auto&&state.phase==='aim') fire(); }, state.fast?50:200);
+    }
+  }, state.fast?50:200);
+}
+function onHoleClick(i){
+  if(state.phase!=='aim'||state.busy) return;
+  state.target=i; SFX.click();
+  const sp=state.specialHoles.indexOf(i)>=0;
+  setHint('已瞄准 <b>'+(i+1)+'</b> 号孔'+(sp?'（<span style="color:var(--red)">特殊奖励孔</span>）':'')+
+    ' · 命中率 <b>'+fmtPct(winChance(i))+'</b> · 命中可得 <b>'+
+    (state.rewardValue*state.roundBet*(sp?2:1)+state.pity.wxtd)+'</b> 颗'+
+    (state.actSkills.alchemy>=1&&!state.alchemyUsed?' —— 可按「点石成金」改造此孔':''));
+  renderHoles(); renderHUD(); save();
+}
+/* 点石成金 */
+function applyAlchemy(i,lv,silent){
+  const isR=state.rewardHoles.indexOf(i)>=0, isS=state.specialHoles.indexOf(i)>=0;
+  if(isS) return false;
+  if(isR){
+    if(Math.random()<ALCH_UP[lv]){ state.specialHoles.push(i); if(!silent){ say('点石成金！'+(i+1)+' 号孔变为特殊奖励孔（命中奖励 ×2）'); } return true; }
+    if(!silent) say('点石成金失败：'+(i+1)+' 号孔保持普通奖励孔。');
+    return false;
+  }else{
+    if(Math.random()<ALCH_DOWN[lv]){
+      state.rewardHoles.push(i); state.rewardHoles.sort((a,b)=>a-b);
+      if(!silent) say('点石成金成功：'+(i+1)+' 号孔变成了奖励孔！');
+      return true;
+    }
+    if(!silent) say('点石成金失败：'+(i+1)+' 号孔没有变化。');
+    return false;
+  }
+}
+async function useAlchemy(){
+  const lv=state.actSkills.alchemy;
+  if(state.busy){ return; }
+  if(state.phase!=='aim'){ toast('要在「确认」之后、发射之前使用','bad'); return; }
+  if(lv<1){ toast('尚未学习点石成金','bad'); return; }
+  if(state.alchemyUsed){ toast('本回合已经用过了','bad'); return; }
+  if(state.target===null){ toast('先点一个孔作为目标','bad'); return; }
+  const i=state.target;
+  if(state.specialHoles.indexOf(i)>=0){ toast('该孔已经是特殊奖励孔','bad'); return; }
+  const wasReward=state.rewardHoles.indexOf(i)>=0;
+  const okk=applyAlchemy(i,lv,false);
+  state.alchemyUsed=true; state.stats.alchemy++;
+  state.busy=true; renderHUD();
+  await alchemyFx(i,okk,wasReward?'special':'reward');
+  state.busy=false;
+  const kind=wasReward?'特殊奖励孔':'奖励孔';
+  pushLog('buff','点石成金 Lv'+lv+' → '+(i+1)+' 号孔：'+(okk?('变成'+kind):'改造失败'),'🪄');
+  toast(okk?('成功：'+(i+1)+' 号孔变成'+kind):('失败：'+(i+1)+' 号孔没有变化'), okk?'good':'bad');
+  renderHoles(); renderCenter(); renderHUD(); refreshPanel(); save();
+}
+async function fire(){
+  if(state.phase!=='aim'||state.busy) return;
+  if(state.target===null){ toast('请先点选一个孔作为目标','bad'); return; }
+  const target=state.target, landed=pickLanding(target);
+  const isWin=state.rewardHoles.indexOf(landed)>=0;
+  const isSpecial=state.specialHoles.indexOf(landed)>=0;
+  state.phase='firing';
+  renderHUD(); setHint('发射中…'); SFX.drop();
+  await launchSequence(landed);
+  if(state.fast) await wait(60);
+  const st=state.stats;
+  st.rounds++; profile.life.rounds++;
+  let gain=0, extra=0;
+  const el=holeEls[landed];
+  el.classList.add('landed',isWin?'ok':'no');
+  setTimeout(()=>el.classList.remove('landed','ok','no'),720);
+
+  if(isWin){
+    const mult=isSpecial?2:1;
+    const base=state.rewardValue*state.roundBet*mult;
+    extra=state.pity.wxtd; gain=base+extra;
+    state.marbles+=gain;
+    gotMarbles(gain);
+    st.wins++; st.marblesOut+=gain; st.streak++;
+    st.bestStreak=Math.max(st.bestStreak,st.streak);
+    st.bestWin=Math.max(st.bestWin,gain); st.bestMult=Math.max(st.bestMult,state.roundBet);
+    if(isSpecial) st.specialHits++;
+    st.missStreak=0;
+    profile.life.wins++; profile.life.bestStreak=Math.max(profile.life.bestStreak,st.streak);
+    profile.life.bestWin=Math.max(profile.life.bestWin,gain);
+    const profit=gain-state.roundBet, pos=holeCenter(landed);
+    floatText('+'+gain+' 弹珠',pos,isSpecial?'#ff5168':'#3ddc97');
+    if(extra>0) setTimeout(()=>floatText('卧薪尝胆 +'+extra,{x:pos.x,y:pos.y-34},'#ffc79a'),250);
+    (gain>=state.roundBet*8?SFX.big:SFX.win)();
+    pushLog('win','命中 '+(landed+1)+' 号'+(isSpecial?'（特殊 ×2）':'')+' · '+state.rewardValue+'×'+state.roundBet+(isSpecial?'×2':'')+
+      (extra?' +卧薪 '+extra:'')+' · 净 '+((profit>=0?'+':'')+profit),'+'+gain);
+    const consumed=[];
+    if(state.pity.hit){consumed.push('命中加成');state.pity.hit=false;}
+    if(state.pity.luck){consumed.push('广撒网');state.pity.luck=false;}
+    if(state.pity.fortune){consumed.push('聚宝盆');state.pity.fortune=false;}
+    if(state.pity.wxtd>0){consumed.push('卧薪尝胆×'+state.pity.wxtd);state.pity.wxtd=0;}
+    state.pity.counter=0;
+    if(consumed.length) pushLog('buff','激励 BUFF 已消耗：'+consumed.join('、'),'—');
+    say('中奖！落在 '+(landed+1)+' 号'+(isSpecial?'特殊':'')+'奖励孔，获得 '+gain+' 颗（净 '+((profit>=0?'+':'')+profit)+'）。');
+    setHint('🎉 命中 <b>'+(landed+1)+'</b> 号'+(isSpecial?'<span style="color:var(--red)">特殊</span>':'')+'奖励孔：'+
+      state.rewardValue+' × '+state.roundBet+(isSpecial?' × 2':'')+(extra?' + 卧薪 '+extra:'')+' = <b>'+gain+'</b> 颗');
+  }else{
+    st.missStreak++; profile.life.misses++;
+    floatText('未命中 -'+state.roundBet,holeCenter(landed),'#ff5168');
+    SFX.miss();
+    pushLog('lose','落入 '+(landed+1)+' 号孔（非奖励孔） · 未命中','-'+state.roundBet);
+    state.pity.counter++;
+    if(state.pity.counter>=state.pity.threshold){
+      state.pity.counter=0;
+      const card=grantPityBuff();
+      showBuffCards([card]);
+      state.pity.threshold=randInt(CFG.pityMin,CFG.pityMax);
+    }
+    setHint('未命中 · 激励倒计时 <b>'+state.pity.counter+'/'+state.pity.threshold+'</b>');
+  }
+  for(const k of PROMO_KEYS){ const b=state.promo[k]; if(b&&b.rounds>0){ b.rounds--; if(b.rounds<=0){ b.rounds=0; b.lv=0; } } }
+  // 技能加点在下回合生效
+  state.actSkills=Object.assign({},profile.skills);
+  state.phase='ready'; state.roundBet=0; state.rewardHoles=[]; state.specialHoles=[]; state.rewardValue=0;
+  state.target=null; state.preview={holes:[],value:0}; state.alchemyUsed=false;
+  pushCurve();
+  checkAcv();
+  renderHoles(); renderHUD(); refreshPanel(); save();
+  if(state.auto) setTimeout(autoStep, state.fast?80:320);
+}
+function grantPityBuff(){
+  const pool=['hit','luck','fortune'].filter(k=>!state.pity[k]);
+  if(state.pity.wxtd===0) pool.push('wxtd');
+  let got='', card=null;
+  if(pool.length===0){
+    state.pity.wxtd+=1; got='卧薪尝胆 +1 层（已集齐）';
+    card={icon:'🔥',name:'卧薪尝胆',pity:true,effect:'命中后额外 +'+state.pity.wxtd+' 颗',delta:'+1 层',text:got};
+  }else{
+    const k=pick(pool);
+    if(k==='wxtd'){
+      const bonus=hasPityBuff()?1:(1+CFG.wxtdBonus);
+      state.pity.wxtd+=bonus;
+      got='卧薪尝胆 ×'+state.pity.wxtd+(bonus>1?'（独占额外 +'+CFG.wxtdBonus+' 层）':'');
+      card={icon:'🔥',name:'卧薪尝胆',pity:true,effect:'命中后额外 +'+state.pity.wxtd+' 颗弹珠',delta:'+'+bonus+' 层',text:got};
+    }else{
+      state.pity[k]=true;
+      const map={hit:{i:'🎯',n:'命中加成',a:'命中 +1'},luck:{i:'🧩',n:'广撒网',a:'幸运 +1'},fortune:{i:'💰',n:'聚宝盆',a:'财运 +1'}};
+      const m=map[k]; got=m.n+'（'+m.a+'）';
+      card={icon:m.i,name:m.n,pity:true,effect:m.a+' · 命中一次后消失',delta:'+1 点',text:got};
+    }
+  }
+  state.stats.buffsGained++; SFX.buff();
+  pushLog('buff','连续 '+state.pity.threshold+' 回合未命中 → 激励 BUFF：'+got,'✨');
+  say('连续未命中触发激励 BUFF：'+got+'。');
+  return card;
+}
+function floatText(txt,pos,color){
+  const el=document.createElement('div'); el.className='float'; el.textContent=txt; el.style.color=color;
+  el.style.left=pos.x+'px'; el.style.top=(pos.y-30)+'px';
+  floatLayer.appendChild(el); setTimeout(()=>el.remove(),1350);
+}
+function autoStep(){
+  if(!state.auto) return;
+  if(state.phase!=='ready') return;
+  if(state.marbles<1){
+    if(state.coins>=CFG.coinPerBuy){ buyCoin(); }
+    else{ state.auto=false; renderHUD(); toast('钱币与弹珠都耗尽，自动连发结束','bad'); return; }
+  }
+  const n=Math.max(1,Math.min(state.marbles,parseInt($('#inpQty').value,10)||1));
+  if(!addMarbles(n)) return;
+  setTimeout(()=>{ if(state.auto&&state.phase==='betting') confirmBet(); }, state.fast?60:240);
+}
+function pushLog(t,txt,amt){
+  state.log.unshift({t:t,no:state.stats.rounds||state.stats.buys||0,txt:txt,amt:amt});
+  if(state.log.length>90) state.log.length=90;
+  if(curTab==='log') renderPanel();
+}
+function pushCurve(){ state.curve.push(state.marbles); if(state.curve.length>160) state.curve.shift(); }
+
+/* ------------------------------ 初始化 ------------------------------ */
+function init(){
+  load();
+  applyTheme(profile.theme||'neon');
+  state.pity=Object.assign({counter:0,threshold:randInt(CFG.pityMin,CFG.pityMax),hit:false,luck:false,fortune:false,wxtd:0}, state.pity||{});
+  if(!state.promo) state.promo={};
+  if(!state.actSkills) state.actSkills=Object.assign({},profile.skills);
+  buildHoles(); renderHoles(); renderHUD(); renderPanel();
+  if(!state.curve.length) state.curve=[state.marbles];
+
+  $('#btnBuy').onclick=buyCoin;
+  $('#btnAdd1').onclick=()=>addMarbles(1);
+  $('#btnAddN').onclick=()=>addMarbles(parseInt($('#inpQty').value,10)||1);
+  $('#btnConfirm').onclick=confirmBet;
+  $('#btnFire').onclick=()=>fire();
+  $('#btnAlchemy').onclick=useAlchemy;
+  $('#btnTheme').onclick=cycleTheme;
+  $('#btnReset').onclick=()=>{ if(confirm('重新开始本局？（技能/成就/皮肤保留）')) hardReset(); };
+  $('#tgAuto').onchange=e=>{ state.auto=e.target.checked; if(state.auto&&state.phase==='ready') autoStep(); renderHUD(); save(); };
+  $('#tgFast').onchange=e=>{ state.fast=e.target.checked; renderHUD(); save(); };
+  $('#tgSound').onchange=e=>{ state.sound=e.target.checked; renderHUD(); save(); if(state.sound) SFX.click(); };
+  $$('.tab').forEach(t=>t.onclick=()=>{
+    $$('.tab').forEach(x=>x.classList.remove('sel')); t.classList.add('sel');
+    curTab=t.dataset.tab; renderPanel();
+  });
+  window.addEventListener('resize',()=>{ layoutMech(); if(curTab==='stats') drawCurve(); });
+  window.addEventListener('keydown',e=>{
+    if(e.code!=='Space') return; e.preventDefault();
+    if(state.phase==='betting') confirmBet();
+    else if(state.phase==='aim'){ if(state.target===null){ state.target=bestTarget(); renderHoles(); } fire(); }
+    else if(state.phase==='ready') addMarbles(1);
+  });
+  say('欢迎！先投币（每次抽 '+CFG.promoDraws+' 个促销 BUFF），再下注开奖。');
+  setHint('先「投币」补充弹珠，再下注：<b>＋投入 1 颗</b> 或批量投入，投完按 <b>确认</b> 开奖');
+  save();
+}
+init();
+</script>
+</body>
+</html>
