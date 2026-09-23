@@ -1,10 +1,9 @@
 # 🎯 弹珠机 PRO · 幸运打珠
-
+ 本游戏全程由DeepSeekHarness+DeepSeekFlashV4.1(High)制作 除了readme中的这一行和提示词是我写的之外 不含任何人工成分 
 > 一个**纯前端、零依赖、单文件**的日式弹珠机（Pachinko）模拟游戏。
 > 投入弹珠 → 确认开奖 → 瞄准奖励孔 → 拉动发射机构，在弹珠耗尽前把总资产做大。
 
-**在线试玩：** `https://<你的用户名>.github.io/<仓库名>/marble-pachinko.html`
-（把这段换成你自己的 GitHub Pages 地址；若已把文件重命名为 `index.html`，直接访问仓库根路径即可）
+**在线试玩：https://hadyy4.github.io/ballgamebydsh/ 
 
 ![主界面](screenshots/01-board-neon.png)
 
@@ -270,15 +269,8 @@
 
 ## 🛠 本地运行 / 部署
 
-**本地**：直接双击 `marble-pachinko.html` 即可，无需服务器与构建。
+**本地**：直接双击 `index.html` 即可，无需服务器与构建。
 
-**GitHub Pages**：
-
-1. 把 `marble-pachinko.html`（连同 `screenshots/`，否则 README 里的图会裂）提交到仓库；
-2. 仓库 `Settings → Pages → Build and deployment` 选择 `Deploy from a branch`，分支选 `main`、目录选 `/ (root)`，保存；
-3. 等 1~2 分钟后访问 `https://<用户名>.github.io/<仓库名>/marble-pachinko.html`。
-
-> 💡 想让根路径 `https://<用户名>.github.io/<仓库名>/` 直接打开游戏，把文件复制/重命名为 `index.html` 即可（两份都留也可以）。
 
 ---
 
